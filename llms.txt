@@ -1,0 +1,4 @@
+codex_work_pet: Windows x64 OpenAI.Codex desktop backgrounds and configurable character/quota companion.
+Read README.md, AGENTS.md and docs/AI-INSTALL.md before installing.
+app/Install.ps1 -PreflightOnly detects actual support. Root Install.ps1 uses release.json and verifies the Release SHA-256.
+No secrets, reset consumption, DSH plugin commands, forced client exit or false installation claims.

@@ -1,0 +1,4 @@
+using System;using System.IO;using System.Diagnostics;using System.Windows.Forms;
+class MutsumiSettings {
+ [STAThread]static void Main(){try{string root=AppDomain.CurrentDomain.BaseDirectory;var start=new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),@"WindowsPowerShell\v1.0\powershell.exe"),"-NoLogo -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -File \""+Path.Combine(root,"Open-Settings.ps1")+"\" -InstallRoot \""+root.TrimEnd('\\')+"\""){UseShellExecute=false,CreateNoWindow=true,WindowStyle=ProcessWindowStyle.Hidden};using(var p=Process.Start(start)){if(!p.WaitForExit(120000)||p.ExitCode!=0)MessageBox.Show("Codex Work Pet settings could not connect. Please check the installation status.","Mutsumi");}}catch{MessageBox.Show("Codex Work Pet settings could not start. Please reinstall the package.","Mutsumi");}}
+}

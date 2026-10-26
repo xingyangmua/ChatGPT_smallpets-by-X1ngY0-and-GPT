@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "mutsumi-3575",
+  "name": "睦 · 蓝天草地",
+  "image": "IMG3575.jpg",
+  "appearance": "auto",
+  "brandSubtitle": "MUTSUMI",
+  "tagline": "今天也慢慢来。",
+  "projectPrefix": "选择项目 · ",
+  "projectLabel": "选择项目",
+  "statusText": "MUTSUMI",
+  "quote": "",
+  "art": {
+    "focusX": 0.5,
+    "focusY": 0.42,
+    "safeArea": "none",
+    "taskMode": "full"
+  }
+}

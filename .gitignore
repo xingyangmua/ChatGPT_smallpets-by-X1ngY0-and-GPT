@@ -1,0 +1,13 @@
+/release-assets/
+/dist/
+*.zip
+**/data/
+**/backups/
+**/evidence/
+**/node_modules/
+*.lnk
+*.exe
+*.log
+auth.json
+runtime.json
+.env

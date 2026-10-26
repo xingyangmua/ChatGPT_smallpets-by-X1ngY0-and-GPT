@@ -1,0 +1,52 @@
+# 安全策略（Security Policy）
+
+本次发行标签 `codex-v0.4.0(fixixed)`，构建 `surface-audio-fix-20261007`。文中 fixed 标签与迁移数字是历史记录。
+
+## 支持范围
+
+本独立仓库 [Yang-huai406/Codex-Whale-Public](https://github.com/Yang-huai406/Codex-Whale-Public) 由 Yang-huai406 维护，当前为公开仓库，开发分支为 `main`。当前发行版本为 **Codex-v0.4(fixixed)**，内部版本 `0.4.1`，构建 `surface-audio-fix-20261007`；`codex-v0.4.0(fixed)` 是指向对应净化提交的历史版本标签，安装包见[最新历史发行](https://github.com/Yang-huai406/Codex-Whale-Public/releases/latest)。本仓库的历史发行是迁移副本，不是新版本；净化旧包不代表重新验证或承诺维护每个旧版本，详见[发行历史](https://github.com/Yang-huai406/Codex-Whale-Public/blob/main/docs/RELEASE-HISTORY.md)。Windows x64 已做回归验证；macOS 兼容源自 PR #128，实机及完整集成待验证。上游 0.3.0-beta、历史 0.2.4 及 macOS 改编来源见 [PROVENANCE.md](PROVENANCE.md)，它们不代表当前版本号。漏洞报告渠道与披露安排遵循仓库维护者的实际政策。
+
+上游 DSH Web 版 `dsh-whale-widget` 的普通功能问题请向[原仓库](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget/issues)反馈；Codex 版普通问题使用[本仓库 Issues](https://github.com/Yang-huai406/Codex-Whale-Public/issues)。安全问题及两者共有代码的漏洞，请按下面的私密渠道说明受影响分支。
+
+## 报告漏洞
+
+**请不要用公开 issue 报告安全漏洞。** 任选一种私下渠道：
+
+1. **GitHub 私密漏洞报告（已启用）**：[提交私密报告](https://github.com/Yang-huai406/Codex-Whale-Public/security/advisories/new)。需要登录 GitHub；请勿将漏洞或凭据贴到公开 Issue。若入口不可用，用第 2 种。
+2. **维护者公开指定的安全联系渠道**：以仓库主页或维护者发布的政策为准；不要从未公开授权的个人信息推断联系方式。
+
+请尽量包含：
+
+- 受影响的版本（`.codex-plugin/plugin.json` 里的 `version`）与操作系统版本；
+- 复现步骤或最小样例（PoC）；若涉及密钥/账本，请**脱敏**后再贴；
+- 影响评估：能读到什么、能改到什么、是否需要本地代码执行权限；
+- 是否已在别处公开，便于维护者评估披露安排。
+
+**请勿在报告里附带真实 API 密钥、`auth.json`、`config.toml` 原文、`runtime.json` 或完整账本。** `runtime.json` 含有本地 IPC token。我们不需要这些也能定位问题。
+
+## 处理与披露
+
+响应时间、修复安排、署名和公开披露由仓库维护者按其实际政策决定，本发布材料不代表维护者作出固定时限承诺。建议在公开漏洞细节前先协调；如需匿名、CVE 或特定披露期限，请在私密报告中说明。
+
+## 本插件的安全边界（哪些算漏洞、哪些是设计）
+
+**属于安全问题的例子**
+
+- 未经授权读取凭据，或在界面、日志、接口响应中泄露密钥、`auth.json`、`config.toml` 原文；
+- 把余额/用量数据、聊天内容或本机路径发送到非用户配置的第三方；
+- Windows 本地命名管道（`\\.\pipe\codex-whale-*`）或 macOS Unix socket 可被同机其他进程无凭据调用；
+- 越权路径穿越、符号链接逃逸、素材目录外的读写；
+- 导入素材时绕过格式/尺寸/帧数/配额校验，或损坏文件导致拒绝服务。
+
+**属于已知设计（不算漏洞，欢迎提改进建议）**
+
+- 不校验余额接口服务商的真实性：插件按你配置的地址与密钥查询，并校验已支持的字段契约；这不构成对服务商身份或账单真实性的认证；
+- 汇率来自公开接口（`api.frankfurter.dev`），不做可信度背书；
+- 原生窗口跟随依赖 Win32 窗口句柄或 macOS `CGWindowList` 与用户态权限，不设提权；
+- 金额为**观测估算**，不是服务商正式账单。
+
+## 加固建议（使用者）
+
+- 只从本仓库或可信来源获取插件；升级前备份插件目录与 `~/.codex/whale-widget`（Windows 为 `%USERPROFILE%\.codex\whale-widget`）；
+- 不要把密钥写进插件设置：本插件只保存**密钥环境变量名**，密钥请放在 Codex 配置或系统环境变量里；
+- 若在多用户或共享机器上使用，注意本插件的本地 IPC 面向当前用户会话。

@@ -1,0 +1,22 @@
+{
+  "name": "codex_work_pet",
+  "version": "1.1.0-beta.1",
+  "description": "Configurable Windows Codex / Work pet and subscription quota companion",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node scripts/control.mjs open",
+    "desktop": "node scripts/control.mjs desktop",
+    "test": "node --test tests/*.test.mjs",
+    "install:mac": "node scripts/install-macos.mjs",
+    "uninstall:mac": "node scripts/uninstall-macos.mjs",
+    "probe:mac": "node scripts/probe-macos.mjs"
+  },
+  "codexBuild": "surface-audio-fix-20261007",
+  "distributionName": "codex_work_pet",
+  "releaseTag": "v1.1.0-beta.1"
+}
