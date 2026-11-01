@@ -3,6 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawn} from 'node:child_process';
 import {EventEmitter} from 'node:events';
+import {resolveCodexCli} from './codex-install.mjs';
 
 export const FRESH_MS = 5 * 60_000;
 const finite = n => typeof n === 'number' && Number.isFinite(n);
@@ -34,11 +35,11 @@ export function lowAlerts(snapshot, seen, enabled = true, now = Date.now()) {
 function read(file, fallback = {}) { try { return JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')); } catch { return fallback; } }
 function write(file, value) { const tmp = file + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(value, null, 2), {mode: 0o600}); fs.renameSync(tmp, file); }
 export class QuotaMonitor extends EventEmitter {
-  constructor({dataDir, codexHome, cli, fixture = false, enabled = true}) {
+  constructor({dataDir, codexHome, cli, fixture = false, enabled = true, resolveCli = resolveCodexCli}) {
     super(); this.dir = dataDir; this.home = codexHome; this.cli = cli; this.fixture = fixture;
-    this.enabled=enabled!==false;this.generation=0;this.seq = 0; this.pending = new Map(); this.failures = 0; this.closed = false; this.settings = read(path.join(dataDir, 'mutsumi-settings.json'), {alerts: true});
+    this.resolveCli=resolveCli;this.enabled=enabled!==false;this.generation=0;this.seq = 0; this.pending = new Map(); this.failures = 0; this.closed = false; this.settings = read(path.join(dataDir, 'mutsumi-settings.json'), {alerts: true});
     this.seen = read(path.join(dataDir, 'mutsumi-alerts.json')); this.value = {status:'unavailable',at:null,scope:null,windows:[],resetCount:null,reason:'正在连接官方额度服务'};
-    if (!fixture) { if(this.enabled)this.start(); this.authStamp = this.stamp(); this.watch = setInterval(() => { if(!this.enabled)return;const s = this.stamp(); if (s !== this.authStamp) { this.authStamp = s; this.invalidate('账号状态已变化，正在重新核对'); this.restart(); } }, 3000); this.watch.unref(); }
+    if (!fixture) { this.authStamp = this.stamp(); if(this.enabled)this.start(); this.watch = setInterval(() => { if(!this.enabled)return;const s = this.stamp(); if (s !== this.authStamp) { this.authStamp = s; this.invalidate('账号状态已变化，正在重新核对'); this.restart(); } }, 3000); this.watch.unref(); }
   }
   setEnabled(value){if(typeof value!=='boolean'||this.closed||value===this.enabled)return;this.enabled=value;this.generation++;
     for(const t of [this.timer,this.reconnect,this.eventTimer])clearTimeout(t);const old=this.child;this.child=null;this.ready=false;this.busy=false;old?.kill();for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(Error('companion disabled'));}this.pending.clear();this.invalidate(value?'正在连接官方额度服务':'额度挂件已关闭');if(value&&!this.fixture){this.authStamp=this.stamp();this.start();}}
@@ -98,29 +99,40 @@ export class QuotaMonitor extends EventEmitter {
     } finally { if(generation===this.generation){this.busy=false;this.schedule();} }
   }
   schedule() { clearTimeout(this.timer);if(!this.closed&&this.enabled)this.timer=setTimeout(()=>this.refresh(),Math.min(900000,60000*2**Math.min(this.failures,4)));this.timer?.unref(); }
+  limitsUpdated() {
+    // Reads themselves can emit this notification. A read already in progress
+    // will publish the authoritative reply; scheduling another creates a loop.
+    if(!this.ready||this.busy||this.closed||!this.enabled)return;
+    clearTimeout(this.eventTimer);this.eventTimer=setTimeout(()=>this.refresh(),250);this.eventTimer.unref();
+  }
   async start() {
     if(this.closed||!this.enabled)return;
     this.ready=false;
-    const child=this.child=spawn(this.cli,['app-server'],{windowsHide:true,stdio:['pipe','pipe','pipe'],env:{...process.env,CODEX_HOME:this.home}});
+    const generation=this.generation;
+    let cli;
+    try { cli=await this.resolveCli(this.cli); }
+    catch { if(this.closed||!this.enabled||generation!==this.generation)return;this.value={...this.value,status:this.value.at?'stale':'unavailable',resetCount:null,reason:'暂不可用：未找到当前桌面客户端，请检查商店安装'};this.emit('updated',this.snapshot());clearTimeout(this.reconnect);this.reconnect=setTimeout(()=>this.start(),60000);this.reconnect.unref();return; }
+    if(this.closed||!this.enabled||generation!==this.generation)return;
+    const child=this.child=spawn(cli,['app-server'],{windowsHide:true,stdio:['pipe','pipe','pipe'],env:{...process.env,CODEX_HOME:this.home}});
     let tail='';child.stderr.on('data',()=>{}); // Deliberately do not record App Server logs.
     child.stdout.on('data',bytes=>{if(this.child!==child||!this.enabled)return;tail+=bytes;let i;while((i=tail.indexOf('\n'))>=0){const line=tail.slice(0,i);tail=tail.slice(i+1);try{
       const m=JSON.parse(line),p=this.pending.get(m.id);
       if(p){this.pending.delete(m.id);clearTimeout(p.timer);m.error?p.reject(Error('rpc')):p.resolve(m.result);}
-      else if(m.method==='account/rateLimits/updated' && this.ready){
+      else if(m.method==='account/rateLimits/updated'){
         // Event is a signal; re-read identity and authoritative full response to avoid partial/mixed-account state.
-        clearTimeout(this.eventTimer);this.eventTimer=setTimeout(()=>this.refresh(),250);this.eventTimer.unref();
-      } else if(m.method==='account/updated'){this.invalidate('账号状态已变化');clearTimeout(this.eventTimer);this.eventTimer=setTimeout(()=>this.refresh(),500);this.eventTimer.unref();}
+        this.limitsUpdated();
+      } else if(m.method==='account/updated'){this.generation++;this.busy=false;this.invalidate('账号状态已变化');clearTimeout(this.eventTimer);this.eventTimer=setTimeout(()=>this.refresh(),500);this.eventTimer.unref();}
     }catch{}}});
     child.on('error',()=>this.disconnected(child));child.on('exit',()=>this.disconnected(child));
     try {await this.rpc('initialize',{clientInfo:{name:'mutsumi_quota',title:'Mutsumi quota companion',version:'1.0.0'},capabilities:{experimentalApi:true}});if(this.child!==child)return;child.stdin.write('{"method":"initialized"}\n');this.ready=true;await this.refresh();}
     catch{this.disconnected(child);}
   }
   disconnected(child) {
-    if(this.closed || this.child!==child)return;this.child=null;this.ready=false;this.busy=false;
+    if(this.closed || this.child!==child)return;this.generation++;this.child=null;this.ready=false;this.busy=false;child.kill();for(const t of [this.timer,this.eventTimer])clearTimeout(t);
     for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(Error('disconnected'));}this.pending.clear();
     this.value={...this.value,status:this.value.at?'stale':'unavailable',resetCount:null,reason:'暂不可用：额度服务已断开'};this.emit('updated',this.snapshot());
     clearTimeout(this.reconnect);this.reconnect=setTimeout(()=>this.start(),Math.min(900000,60000*2**Math.min(this.failures++,4)));this.reconnect.unref();
   }
-  restart() { const old=this.child;this.child=null;this.ready=false;clearTimeout(this.timer);clearTimeout(this.reconnect);old?.kill();for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(Error('identity changed'));}this.pending.clear();this.busy=false;this.start(); }
+  restart() { this.generation++;const old=this.child;this.child=null;this.ready=false;for(const t of [this.timer,this.reconnect,this.eventTimer])clearTimeout(t);old?.kill();for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(Error('identity changed'));}this.pending.clear();this.busy=false;this.start(); }
   close() { this.closed=true;for(const t of [this.timer,this.reconnect,this.eventTimer])clearTimeout(t);clearInterval(this.watch);const c=this.child;this.child=null;c?.kill();for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(Error('closed'));}this.pending.clear(); }
 }

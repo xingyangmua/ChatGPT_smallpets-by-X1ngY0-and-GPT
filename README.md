@@ -1,4 +1,6 @@
-# codex_work_pet
+# gpt自定义插件
+
+项目代码名：`codex_work_pet`。
 
 Windows Codex / ChatGPT Work 桌面端的通用角色挂件与自定义背景组件。角色图片可以替换，默认角色仅是示例素材，不限制其他人物或画风。
 
@@ -14,7 +16,7 @@ Windows Codex / ChatGPT Work 桌面端的通用角色挂件与自定义背景组
 
 ## 平台与边界
 
-当前公开测试版 `1.1.0-beta.1` 支持 **Windows x64、Microsoft Store 的 OpenAI.Codex 桌面包**。已验证版本 `26.1021.3705.0`，其进程名为 ChatGPT.exe。不是浏览器脚本，也不把经典 ChatGPT 或 DSH 客户端当作同一安装目标。GPT/DS 在这里是执行安装的助手，不能直接套用 DSH 插件安装命令。
+当前公开测试版 `1.1.0-beta.2` 支持 **Windows x64、Microsoft Store 的 OpenAI.Codex 桌面包**。已验证版本 `26.1021.3705.0`，其进程名为 ChatGPT.exe。不是浏览器脚本，也不把经典 ChatGPT 或 DSH 客户端当作同一安装目标。GPT/DS 在这里是执行安装的助手，不能直接套用 DSH 插件安装命令。
 
 原生任务栏/MSIX入口不统一接管背景启动参数；需要本项目的 Codex Work Pet 启动入口。首次安装时客户端已运行且没有受校验的本机调试会话，背景会标记为待接入，不会强制退出客户端或伪装成功。完整冷启动联合验收、其他系统/客户端版本，以及不同模式切换路径均需以实际状态报告为准。
 
@@ -53,3 +55,12 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\app\Install.ps1 
 ## 内置素材精简（发布前更新）
 
 背景选项仅保留 ChatGPT 默认背景和蓝天草地（IMG3575.jpg）。内置挂件角色仅保留当前疑问形象（IMG3576.png）；四个可自定义槽默认共用这一张，点击音效、弹性反馈和彩蛋继续生效。其他背景、表情和旧装饰 GIF 不随本版本分发。自选背景、替换角色/气泡的能力保留。
+
+
+发布前彩蛋文案更新：新增 `kskbl` 和 `zdjd`，保持每 2–5 次有效点击随机触发；气泡只显示彩蛋文字，不添加解释小字。项目宣传名称为「gpt自定义插件」；代码与安装文件继续使用 codex_work_pet。
+
+### 1.1.0-beta.2 更新
+
+额度服务自动跟随商店客户端更新；新增 **ChatGPT (Work Pet)** 搜索入口。已有窗口没有主题连接时，Status.ps1 显示 pending-restart，请安全退出后从此入口冷启动。官方 MSIX 搜索项仍可能绕过主题参数。已有私人动画会保留。
+
+详见 [修复记录](docs/BUGFIX-2026-11-01.md)。

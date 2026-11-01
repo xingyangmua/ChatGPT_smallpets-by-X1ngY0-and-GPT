@@ -1,0 +1,47 @@
+name: Windows release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate and test
+        shell: pwsh
+        run: |
+          $m=Get-Content release.json -Raw | ConvertFrom-Json
+          if($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -cne $m.tag){throw 'Release tag mismatch'}
+          node --test app/widget/tests/*.test.mjs
+          if($LASTEXITCODE -ne 0){throw 'Tests failed'}
+      - name: Download fixed Electron runtime
+        shell: pwsh
+        run: |
+          Invoke-WebRequest 'https://github.com/electron/electron/releases/download/v44.3.0/electron-v44.3.0-win32-x64.zip' -OutFile electron-runtime.zip
+          if((Get-FileHash electron-runtime.zip -Algorithm SHA256).Hash -ine '26bf9a617d58d81772b3d68305d59ee48272969c15083c06db634a77358a8d9d'){throw 'Electron runtime checksum mismatch'}
+      - name: Build and verify manifest
+        shell: pwsh
+        run: |
+          $expected=Get-Content release.json -Raw | ConvertFrom-Json
+          python tools/build_release.py --electron-archive electron-runtime.zip --output dist --version $expected.version
+          if($LASTEXITCODE -ne 0){throw 'Build failed'}
+          $actual=Get-Content dist/release.json -Raw | ConvertFrom-Json
+          if($actual.sha256 -cne $expected.sha256){throw 'Reproducible package checksum mismatch'}
+      - name: Publish versioned package
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $m=Get-Content dist/release.json -Raw | ConvertFrom-Json
+          gh release create $m.tag ('dist/'+$m.assetName) dist/SHA256SUMS.txt dist/release.json --title ('codex_work_pet '+$m.version) --notes-file docs/BUGFIX-2026-11-01.md --prerelease --verify-tag
+          if($LASTEXITCODE -ne 0){throw 'Release publication failed'}

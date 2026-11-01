@@ -6,12 +6,12 @@ import { validateReleaseMetadata,verifyReleaseMetadata } from '../scripts/releas
 
 const record=()=>({name:'api-balance-whale',version:VERSION});
 const fixture=()=>({plugin:record(),packageMetadata:record(),lock:{...record(),packages:{'':record()}},runtimeVersion:VERSION});
-test('public release metadata, runtime and skill identify the same 0.4.1 candidate',()=>{
-  assert.equal(VERSION,'0.4.1');assert.equal(verifyReleaseMetadata(),VERSION);
+test('public component metadata, runtime and release identify the same version',()=>{
+  assert.equal(verifyReleaseMetadata(),VERSION);
   const pkg=JSON.parse(fs.readFileSync(new URL('../package.json',import.meta.url),'utf8'));
-  assert.equal(pkg.name,'api-balance-whale');assert.equal(pkg.codexBuild,'surface-audio-fix-20261007');
-  const skill=fs.readFileSync(new URL('../skills/api-balance-whale/SKILL.md',import.meta.url),'utf8');
-  assert.ok(skill.includes('# Codex Work Pet v'+VERSION));
+  assert.equal(pkg.name,'codex_work_pet');assert.equal(pkg.releaseTag,'v'+VERSION);
+  const release=JSON.parse(fs.readFileSync(new URL('../../../release.json',import.meta.url),'utf8'));
+  assert.equal(release.version,VERSION);assert.equal(release.tag,pkg.releaseTag);
 });
 test('changing only a manifest or lockfile version fails the package preflight',()=>{
   for(const edit of [x=>x.plugin.version='0.3.0',x=>x.packageMetadata.version='0.3.0',

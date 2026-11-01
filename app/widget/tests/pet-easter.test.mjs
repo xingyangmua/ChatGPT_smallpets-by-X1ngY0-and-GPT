@@ -12,10 +12,15 @@ for(let goal=2;goal<=5;goal++)test(`Easter egg triggers exactly on click ${goal}
  assert.equal(counter.click(),'');
 });
 test('Each supplied phrase can be selected, with no prefix or extra text',()=>{
- for(let i=0;i<4;i++){const values=[0,(i+.1)/4,0];const counter=create(storage(),()=>values.shift()??0);counter.click();assert.equal(counter.click(),phrases[i]);}
+ for(let i=0;i<phrases.length;i++){const values=[0,(i+.1)/phrases.length,0];const counter=create(storage(),()=>values.shift()??0);counter.click();assert.equal(counter.click(),phrases[i]);}
 });
 test('Counter and goal survive restart; unknown stored state is repaired',()=>{
  const store=storage();let counter=create(store,()=>.99);counter.click();counter.click();counter=create(store,()=>0);
  assert.equal(counter.state().count,2);assert.equal(counter.state().goal,5);counter.click();counter.click();assert.equal(counter.click(),phrases[0]);
  store.setItem('dshw-easter-count','99');store.setItem('dshw-easter-goal','n/a');counter=create(store,()=>0);assert.equal(counter.state().count,0);assert.equal(counter.state().goal,2);
+});
+
+test('kskbl and zdjd are text-only easter eggs and keep the existing 2-to-5 click cycle',()=>{
+ assert.deepEqual(Array.from(phrases.slice(-2)),['kskbl','zdjd']);
+ for(const phrase of ['kskbl','zdjd']){const values=[0,(phrases.indexOf(phrase)+.1)/phrases.length,0];const counter=create(storage(),()=>values.shift()??0);assert.equal(counter.click(),'');assert.equal(counter.click(),phrase);assert.equal(counter.state().count,0);assert.equal(counter.state().goal,2);}
 });

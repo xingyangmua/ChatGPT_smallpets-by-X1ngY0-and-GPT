@@ -173,7 +173,7 @@ function Register-ScheduledTask { [CmdletBinding()]param($TaskName,$InputObject,
 & ${quote(path.join(scripts, 'install-follow.ps1'))} -DataDir ${quote(data)}
 `);
   const executable = path.join(process.env.WINDIR || 'C:\\Windows', 'System32/WindowsPowerShell/v1.0/powershell.exe');
-  const result = spawnSync(executable, ['-NoLogo', '-NoProfile', '-NonInteractive', '-File', harness], { encoding: 'utf8', windowsHide: true, timeout: 20000 });
+  const result = spawnSync(executable, ['-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'RemoteSigned', '-File', harness], { encoding: 'utf8', windowsHide: true, timeout: 20000 });
   assert.notEqual(result.status, 0); assert.doesNotMatch(result.stdout, /companion installed/);
   assert.match(result.stderr, /could not register or verify/);
   assert.deepEqual(JSON.parse(await fs.readFile(path.join(data, 'follow-config.json'), 'utf8')), { sentinel: 'keep-current-monitor' });
@@ -222,7 +222,7 @@ foreach($case in $cases){
 $results|ConvertTo-Json -Compress
 `);
   const executable = path.join(process.env.WINDIR || 'C:\\Windows', 'System32/WindowsPowerShell/v1.0/powershell.exe');
-  const result = spawnSync(executable, ['-NoLogo', '-NoProfile', '-NonInteractive', '-File', harness], { encoding: 'utf8', windowsHide: true, timeout: 15000, env: { ...process.env, CODEX_HOME: codex } });
+  const result = spawnSync(executable, ['-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'RemoteSigned', '-File', harness], { encoding: 'utf8', windowsHide: true, timeout: 15000, env: { ...process.env, CODEX_HOME: codex } });
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(JSON.parse(result.stdout.trim()), cases.map(({ name, accepted }) => ({ name, accepted })));
 });

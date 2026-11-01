@@ -1,7 +1,7 @@
 ﻿param([string]$InstallRoot=$PSScriptRoot)
 $ErrorActionPreference='Stop';$state=Join-Path $InstallRoot 'data\mutsumi-entrypoints.json';if(!(Test-Path -LiteralPath $state)){return}
 $records=@(Get-Content -LiteralPath $state -Raw | ConvertFrom-Json);$shell=New-Object -ComObject WScript.Shell
-foreach($folder in @([Environment]::GetFolderPath('Desktop'),(Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs'))){foreach($name in 'Codex Work Pet Settings.lnk','Codex Work Pet.lnk'){
+foreach($folder in @([Environment]::GetFolderPath('Desktop'),(Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs'))){foreach($name in 'Codex Work Pet Settings.lnk','Codex Work Pet.lnk','ChatGPT (Work Pet).lnk'){
  $file=Join-Path $folder $name;$record=$records | Where-Object {$_.path -ieq $file} | Select-Object -First 1
  if(!$record -or !(Test-Path -LiteralPath $file)){continue}
  if((Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ine $record.hash){Write-Warning ('User-modified shortcut preserved: '+$name);continue}

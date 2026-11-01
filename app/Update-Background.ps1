@@ -10,8 +10,8 @@ if($state.injector -ine $injector){throw 'Background belongs to another installa
 $codex=Get-DreamSkinCodexInstall
 $identity=Get-DreamSkinVerifiedCdpIdentity -Port $state.port -Codex $codex
 if(!$identity -or $identity.BrowserId -cne $state.browserId){throw 'No current verified desktop background session; client was not restarted'}
-$old=Get-Process -Id $state.pid -ErrorAction SilentlyContinue
-if($old){$meta=Get-CimInstance Win32_Process -Filter ('ProcessId='+$state.pid);if($old.StartTime.ToUniversalTime().Ticks -ne ([DateTimeOffset]$state.startedAt).UtcDateTime.Ticks -or $meta.CommandLine -notlike ('*'+$injector+'*')){throw 'Watcher identity changed; preserved'};Stop-Process -Id $state.pid}
+. (Join-Path $InstallRoot 'Background-Process.ps1')
+[void](Stop-MutsumiBackgroundWatcher $state $injector)
 $apply=@($injector,'--once','--port',[string]$state.port,'--browser-id',$state.browserId,'--theme-dir',$state.theme)
 if($Evidence){New-Item -ItemType Directory -Path $Evidence -Force | Out-Null;$apply+=@('--screenshot',(Join-Path $Evidence 'background-updated.png'))}
 $result=Invoke-MutsumiNode -NodePath $NodePath -Arguments $apply

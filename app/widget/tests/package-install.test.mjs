@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const helper = path.join(root, 'scripts/marketplace-helper.mjs');
 const json = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
-const releaseVersion = json(path.join(root,'.codex-plugin/plugin.json')).version;
+const releaseVersion = json(path.join(root,'package.json')).version;
 const previousVersion = '0.3.0+codex.previous';
 const write = (file, value) => { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, typeof value === 'string' ? value : JSON.stringify(value)); };
 const setup = t => {
@@ -69,7 +69,7 @@ for (const scenario of ['fresh', 'upgrade', 'failed-registration', 'fresh-newer-
     const wrapper = path.join(s.dir, 'invoke.ps1');
     write(wrapper, `param([string]$Action,[string]$Source,[string]$Cli,[string]$Receipt)\nfunction Get-ScheduledTask { param($TaskName,$ErrorAction) return $null }\nif($Action -eq 'install'){& (Join-Path $Source 'scripts/install-package.ps1') -Source $Source -CodexCli $Cli}else{& (Join-Path $Source 'scripts/rollback-package.ps1') -Receipt $Receipt}\n`);
     const shell = path.join(process.env.WINDIR, 'System32/WindowsPowerShell/v1.0/powershell.exe');
-    const base = ['-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',wrapper];
+    const base = ['-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','RemoteSigned','-File',wrapper];
     const env = { ...s.env, WHALE_TEST_FAIL: scenario === 'failed-registration' ? '1' : '0' };
     let result = spawnSync(shell, [...base,'-Action','install','-Source',source,'-Cli',cli], { env, encoding: 'utf8', timeout: 30000 });
     if (scenario === 'failed-registration') assert.notEqual(result.status, 0); else assert.equal(result.status, 0, result.stdout + result.stderr);

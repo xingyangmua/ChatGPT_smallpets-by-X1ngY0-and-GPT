@@ -1,6 +1,6 @@
 (function(root){
  'use strict';
- const phrases=Object.freeze(['好模型…','用不起别用','Tibo…','你不会把ds接进来的对吧…']);
+ const phrases=Object.freeze(['好模型…','用不起别用','Tibo…','你不会把ds接进来的对吧…','kskbl','zdjd']);
  root.MutsumiEaster=Object.freeze({phrases,create(store,random=Math.random){
   const pick=n=>Math.min(n-1,Math.max(0,Math.floor(random()*n)));
   let count=Number(store.getItem('dshw-easter-count')),goal=Number(store.getItem('dshw-easter-goal'));

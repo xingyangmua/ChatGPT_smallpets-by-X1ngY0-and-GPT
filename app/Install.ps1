@@ -35,11 +35,7 @@ if(!(Test-Path -LiteralPath (Join-Path $runtime 'electron.exe'))){New-Item -Item
 $configFile=Join-Path $data 'mutsumi-install.json';$codexProfileHome=Join-Path $env:USERPROFILE '.codex';if(Test-Path -LiteralPath $configFile){$old=Get-Content -LiteralPath $configFile -Raw | ConvertFrom-Json;if($old.codexHome){$codexProfileHome=$old.codexHome}}
 @{cli=$cli;clientExe=$client;codexHome=$codexProfileHome;appId=$pkg.PackageFamilyName+'!App';packageVersion=[string]$pkg.Version} | ConvertTo-Json | Set-Content -LiteralPath $configFile -Encoding UTF8
 @{mode='subscription';version=1} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $data 'display-mode.json') -Encoding UTF8
-$compiler=Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
-& $compiler /nologo /target:winexe /platform:x64 /reference:System.Web.Extensions.dll ('/out:'+(Join-Path $target 'codex_work_pet.exe')) (Join-Path $target 'ClientLauncher.cs')
-if($LASTEXITCODE -ne 0){throw 'Client entry compilation failed'}
-& $compiler /nologo /target:winexe /platform:x64 /reference:System.Windows.Forms.dll ('/out:'+(Join-Path $target 'codex_work_pet_settings.exe')) (Join-Path $target 'SettingsLauncher.cs')
-if($LASTEXITCODE -ne 0){throw 'Settings entry compilation failed'}
+& (Join-Path $target 'Build-Entries.ps1') -InstallRoot $target
 if($PrepareOnly){@{ok=$true;stage='prepared-only';running=$false;autostartInstalled=$false} | ConvertTo-Json;return}
 & (Join-Path $target 'widget\scripts\install-follow.ps1') -DataDir $data -NoStart | Out-Null
 & (Join-Path $target 'Resume-Widget.ps1') -InstallRoot $target | Out-Null
@@ -47,6 +43,6 @@ if($PrepareOnly){@{ok=$true;stage='prepared-only';running=$false;autostartInstal
 $background=$false
 if(Test-Path -LiteralPath (Join-Path $data 'background-state.json')){try{& (Join-Path $target 'Update-Background.ps1') -InstallRoot $target | Out-Null;$background=$true}catch{}}
 if($Launch -and !$preflight.clientRunning){Start-Process -FilePath (Join-Path $target 'codex_work_pet.exe') -WindowStyle Hidden}
-$receipt=@{project='codex_work_pet';version='1.1.0-beta.1';installedAt=(Get-Date).ToString('o');root=$target;packageName=$pkg.Name;packageVersion=[string]$pkg.Version;backgroundConnected=$background;clientRestarted=$false;originalClientEntrypointsPreserved=$true}
+$receipt=@{project='codex_work_pet';version='1.1.0-beta.2';installedAt=(Get-Date).ToString('o');root=$target;packageName=$pkg.Name;packageVersion=[string]$pkg.Version;backgroundConnected=$background;clientRestarted=$false;originalClientEntrypointsPreserved=$true}
 $receipt | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $target 'receipt.json') -Encoding UTF8
 @{ok=$true;stage='installed';installRoot=$target;backgroundConnected=$background;verificationRequired=$true;nextStep=if($background){'Run Status.ps1 and confirm companion health'}else{'Use managed Mutsumi Codex entry after a safe client exit; do not claim background complete until Status.ps1 confirms it'}} | ConvertTo-Json

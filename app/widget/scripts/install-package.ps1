@@ -11,7 +11,7 @@ $DataDir = Get-WhaleFullPath $DataDir
 foreach ($location in @($Source,$target,$DataDir)) { Assert-WhalePlainPath $location }
 if ($DataDir -eq $target -or $DataDir.StartsWith($target + '\',[StringComparison]::OrdinalIgnoreCase) -or $target.StartsWith($DataDir + '\',[StringComparison]::OrdinalIgnoreCase)) { throw 'Plugin code and user data must be separate directories.' }
 $manifest = Get-Content -LiteralPath (Join-Path $Source '.codex-plugin\plugin.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-if ($manifest.name -cne 'api-balance-whale' -or $manifest.version -notmatch '^\d+\.\d+\.\d+(?:\+[A-Za-z0-9.-]+)?$') { throw 'This installer requires a valid api-balance-whale release manifest.' }
+if ($manifest.name -cne 'api-balance-whale' -or $manifest.version -notmatch '^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?(?:\+[A-Za-z0-9.-]+)?$') { throw 'This installer requires a valid api-balance-whale release manifest.' }
 $node = Find-WhaleNode
 Invoke-WhaleCommand $node @((Join-Path $Source 'scripts\check-package.mjs'))
 $cli = Find-WhaleCodex $CodexCli

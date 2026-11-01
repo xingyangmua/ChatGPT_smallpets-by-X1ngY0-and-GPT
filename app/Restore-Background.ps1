@@ -8,7 +8,7 @@ if($state.injector -ine $injector){throw 'Background state belongs to another in
 . (Join-Path $InstallRoot 'Runtime-Paths.ps1');$node=Get-MutsumiNode $InstallRoot
 New-Item -ItemType File -Path (Join-Path $InstallRoot 'data\background-paused.json') -Force | Out-Null
 try {Invoke-MutsumiNode -NodePath $node -Arguments @($injector,'--remove','--port',[string]$state.port,'--browser-id',$state.browserId) | Out-Null}catch{}
-$p=Get-Process -Id $state.pid -ErrorAction SilentlyContinue
-if($p){$meta=Get-CimInstance Win32_Process -Filter ('ProcessId='+$state.pid);if($p.StartTime.ToUniversalTime().Ticks -ne ([DateTimeOffset]$state.startedAt).UtcDateTime.Ticks -or $meta.CommandLine -notlike ('*'+$injector+'*')){throw 'Watcher identity changed; preserved'};Stop-Process -Id $state.pid}
+. (Join-Path $InstallRoot 'Background-Process.ps1')
+[void](Stop-MutsumiBackgroundWatcher $state $injector)
 $state.enabled=$false;$state | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $stateFile -Encoding UTF8
 'Background injection removed and watcher disabled. Normal client exit closes the local debugging session. User data retained.'

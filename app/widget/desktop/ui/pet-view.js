@@ -9,7 +9,9 @@
   const source=()=>gallery[index]?.url||'/assets/IMG'+avatars[index]+'.png';
   function role() {
     const img=document.querySelector('.dshwv-img');if(!img)return;
-    img.src=source();img.alt=gallery[index]?.name||'睦';
+    const nextSource=source();
+    if(img.getAttribute('src')!==nextSource)img.src=nextSource;
+    img.alt=gallery[index]?.name||'睦';
     localStorage.setItem('dshw-role','default');
     window.WhaleRendering?.hitCache.prepare(img.src);
     window.WhaleRendering?.presentFor(260);

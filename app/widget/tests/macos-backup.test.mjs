@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import os from 'node:os';
 import { backupMacInstall } from '../scripts/macos-backup.mjs';
-const qa = fileURLToPath(new URL('../../qa/', import.meta.url));
-test('Mac rollback backup preserves operational config and prior source, never snapshots or overwrites ledger', () => {
- fs.mkdirSync(qa, { recursive: true }); const root = fs.mkdtempSync(path.join(qa, 'mac-backup-'));
+test('Mac rollback backup preserves operational config and prior source, never snapshots or overwrites ledger', t => {
+ const root = fs.mkdtempSync(path.join(os.tmpdir(), 'mac-backup-'));
+ t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
  const dataDir = path.join(root, 'data'), oldRoot = path.join(root, 'old-plugin');
  fs.mkdirSync(dataDir); fs.mkdirSync(oldRoot); fs.writeFileSync(path.join(oldRoot, 'source.mjs'), 'old source');
  const plistPath = path.join(root, 'old.plist'); fs.writeFileSync(plistPath, 'old plist');

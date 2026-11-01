@@ -1,4 +1,4 @@
-﻿param([Parameter(Mandatory=$true)][string]$InstallRoot,[Parameter(Mandatory=$true)][string]$Evidence,[Parameter(Mandatory=$true)][string]$NodePath,[int]$Port=9335)
+﻿param([Parameter(Mandatory=$true)][string]$InstallRoot,[Parameter(Mandatory=$true)][string]$Evidence,[Parameter(Mandatory=$true)][string]$NodePath,[int]$Port=9335,[switch]$AttachExisting)
 $ErrorActionPreference='Stop'
 . (Join-Path $InstallRoot 'Runtime-Paths.ps1')
 $engine=Join-Path $InstallRoot 'background-engine'
@@ -9,6 +9,11 @@ try {
  $codex=Get-DreamSkinCodexInstall
  $report.clientVersion=[string]$codex.Version
  $baseline=@(Get-DreamSkinCodexProcesses -Codex $codex | ForEach-Object {[int]$_.ProcessId})
+ if($AttachExisting){
+  $identity=Get-DreamSkinVerifiedCdpIdentity -Port $Port -Codex $codex
+  if(!$identity){throw 'The existing client has no verified background endpoint; it was preserved'}
+  $report.strategy='attach-existing';$report.stage='listener'
+ }else{
  if($baseline.Count){throw 'The verified client must be fully closed before this probe'}
  if(!(Test-DreamSkinPortAvailable -Port $Port)){throw 'Loopback port occupied; no client launched'}
  $profile=Join-Path $env:APPDATA 'Codex\web\Codex'
@@ -25,6 +30,7 @@ try {
  $deadline=(Get-Date).AddSeconds(45);$identity=$null
  do {$identity=Get-DreamSkinVerifiedCdpIdentity -Port $Port -Codex $codex;if($identity){break};Start-Sleep -Milliseconds 500}while((Get-Date) -lt $deadline)
  if(!$identity){throw ('Actual '+$codex.Version+' did not expose an owned, verified loopback CDP endpoint within 45 seconds; arguments='+$launch.ArgumentStatus)}
+ }
  $report.stage='renderer'
  $injector=Join-Path $engine 'scripts\injector.mjs';$theme=Join-Path $InstallRoot 'background-themes\3575'
  $render=Invoke-MutsumiNode -NodePath $NodePath -Arguments @($injector,'--once','--port',[string]$Port,'--browser-id',$identity.BrowserId,'--theme-dir',$theme,'--screenshot',(Join-Path $Evidence 'background-installed.png')) 2> (Join-Path $Evidence 'background-render-error.txt')
@@ -41,7 +47,7 @@ try {
  $report.stage='injected';$report.ok=$true
 }catch{
  $report.error=$_.Exception.Message
- if($codex -and $report.stage -ne 'preflight') {try{Stop-DreamSkinCodex -Codex $codex -PreserveProcessIds $baseline;$report.failedDebugSessionClosed=$true}catch{$report.rollbackError=$_.Exception.Message}}
+ if($codex -and !$AttachExisting -and $report.stage -ne 'preflight') {try{Stop-DreamSkinCodex -Codex $codex -PreserveProcessIds $baseline;$report.failedDebugSessionClosed=$true}catch{$report.rollbackError=$_.Exception.Message}}
 }finally{
  $report.finishedAt=(Get-Date).ToString('o')
  $report | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $Evidence 'background-probe.json') -Encoding UTF8
