@@ -13,3 +13,7 @@ First generic codex_work_pet release preparation. Custom background and native-d
 ## 1.1.0-beta.2
 
 修复商店更新后旧版 CLI 路径失效、额度事件刷新循环与账号切换竞态；背景支持受验证会话重连，未接入窗口明确提示待安全重启；新增 ChatGPT (Work Pet) 搜索入口和程序图标。修复旧 PID 阻断背景恢复、发布版本不一致和测试目录残留。详见 docs/BUGFIX-2026-11-01.md。
+
+## 1.1.0-beta.3
+
+修正 Windows 云端测试中 8.3 临时路径、真实路径和路径大小写的比较；保留严格的文件目标校验。README、AGENTS、AI 安装流程和包内说明同步为新版，分清真实额度、背景待安全重启、源码推送与附件发布。

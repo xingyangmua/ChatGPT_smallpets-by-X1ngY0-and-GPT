@@ -1,6 +1,6 @@
 # AI 安装、更新与接手流程
 
-本文件与 README.md、AGENTS.md 配合使用。当前组件版本为 `1.1.0-beta.2`。这是一套 Windows 本机伴随组件，不是 DSH 插件注册包。
+本文件与 README.md、AGENTS.md 配合使用。当前组件版本为 `1.1.0-beta.3`。这是一套 Windows 本机伴随组件，不是 DSH 插件注册包。
 
 ## 先检查，再执行
 

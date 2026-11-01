@@ -182,7 +182,7 @@ function Register-ScheduledTask { [CmdletBinding()]param($TaskName,$InputObject,
 });
 
 test('task identity accepts a verified old cache but rejects outside installations and different data directories', { skip: process.platform !== 'win32' }, async t => {
-  const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'whale-desktop-audit-identity-中文 空格-'));
+  const temporary = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'whale-desktop-audit-identity-中文 空格-')));
   t.after(async () => {
     const resolved = path.resolve(temporary);
     assert.ok(resolved.startsWith(path.resolve(os.tmpdir()) + path.sep) && path.basename(resolved).startsWith('whale-desktop-audit-identity-'));

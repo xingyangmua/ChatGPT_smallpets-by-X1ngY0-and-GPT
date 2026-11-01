@@ -1,8 +1,8 @@
 {
   "project": "codex_work_pet",
-  "version": "1.1.0-beta.2",
-  "tag": "v1.1.0-beta.2",
+  "version": "1.1.0-beta.3",
+  "tag": "v1.1.0-beta.3",
   "platform": "windows-x64",
-  "assetName": "codex_work_pet-windows-x64-v1.1.0-beta.2.zip",
-  "sha256": "a924c1264eed8adb41e70a215e6c940a3e6360665f348e5ddb683335fd1ecfe7"
+  "assetName": "codex_work_pet-windows-x64-v1.1.0-beta.3.zip",
+  "sha256": "13d0e4b1cd4af81e6113e9cdebaa508b4b041d7932eb9188239c2cf6be99d195"
 }

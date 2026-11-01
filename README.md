@@ -1,8 +1,8 @@
 # gpt自定义插件 · codex_work_pet
 
-当前版本：**1.1.0-beta.2**。Windows x64 上的 Codex / ChatGPT Work 背景与角色挂件组件。
+当前版本：**1.1.0-beta.3**。Windows x64 上的 Codex / ChatGPT Work 背景与角色挂件组件。
 
-[下载完整安装包](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/releases/tag/v1.1.0-beta.2) · [AI 安装与接手流程](docs/AI-INSTALL.md) · [修复记录](docs/BUGFIX-2026-11-01.md)
+[下载完整安装包](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/releases/tag/v1.1.0-beta.3) · [AI 安装与接手流程](docs/AI-INSTALL.md) · [修复记录](docs/BUGFIX-2026-11-01.md)
 
 ## AI 从这里开始
 
