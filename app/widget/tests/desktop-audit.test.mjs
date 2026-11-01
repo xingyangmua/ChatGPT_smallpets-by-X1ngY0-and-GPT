@@ -185,7 +185,8 @@ test('task identity accepts a verified old cache but rejects outside installatio
   const temporary = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'whale-desktop-audit-identity-中文 空格-')));
   t.after(async () => {
     const resolved = path.resolve(temporary);
-    assert.ok(resolved.startsWith(path.resolve(os.tmpdir()) + path.sep) && path.basename(resolved).startsWith('whale-desktop-audit-identity-'));
+    assert.equal((await fs.realpath(path.dirname(resolved))).toLowerCase(), (await fs.realpath(os.tmpdir())).toLowerCase());
+    assert.ok(path.basename(resolved).startsWith('whale-desktop-audit-identity-'));
     await fs.rm(resolved, { recursive: true, force: true });
   });
   const codex = path.join(temporary, 'codex'), data = path.join(temporary, 'data');

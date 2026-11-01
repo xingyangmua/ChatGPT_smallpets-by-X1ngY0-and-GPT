@@ -43,6 +43,6 @@ if($PrepareOnly){@{ok=$true;stage='prepared-only';running=$false;autostartInstal
 $background=$false
 if(Test-Path -LiteralPath (Join-Path $data 'background-state.json')){try{& (Join-Path $target 'Update-Background.ps1') -InstallRoot $target | Out-Null;$background=$true}catch{}}
 if($Launch -and !$preflight.clientRunning){Start-Process -FilePath (Join-Path $target 'codex_work_pet.exe') -WindowStyle Hidden}
-$receipt=@{project='codex_work_pet';version='1.1.0-beta.3';installedAt=(Get-Date).ToString('o');root=$target;packageName=$pkg.Name;packageVersion=[string]$pkg.Version;backgroundConnected=$background;clientRestarted=$false;originalClientEntrypointsPreserved=$true}
+$receipt=@{project='codex_work_pet';version='1.1.0-beta.4';installedAt=(Get-Date).ToString('o');root=$target;packageName=$pkg.Name;packageVersion=[string]$pkg.Version;backgroundConnected=$background;clientRestarted=$false;originalClientEntrypointsPreserved=$true}
 $receipt | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $target 'receipt.json') -Encoding UTF8
 @{ok=$true;stage='installed';installRoot=$target;backgroundConnected=$background;verificationRequired=$true;nextStep=if($background){'Run Status.ps1 and confirm companion health'}else{'Use managed Mutsumi Codex entry after a safe client exit; do not claim background complete until Status.ps1 confirms it'}} | ConvertTo-Json

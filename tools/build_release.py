@@ -6,7 +6,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--electron-archive', required=True, type=Path)
     parser.add_argument('--output', default='dist', type=Path)
-    parser.add_argument('--version', default='1.1.0-beta.3')
+    parser.add_argument('--version', default='1.1.0-beta.4')
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[1]
     source = repo / 'app'
