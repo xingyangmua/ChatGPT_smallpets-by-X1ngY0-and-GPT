@@ -1,66 +1,88 @@
-# gpt自定义插件
+# gpt自定义插件 · codex_work_pet
 
-项目代码名：`codex_work_pet`。
+当前版本：**1.1.0-beta.2**。Windows x64 上的 Codex / ChatGPT Work 背景与角色挂件组件。
 
-Windows Codex / ChatGPT Work 桌面端的通用角色挂件与自定义背景组件。角色图片可以替换，默认角色仅是示例素材，不限制其他人物或画风。
+[下载完整安装包](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/releases/tag/v1.1.0-beta.2) · [AI 安装与接手流程](docs/AI-INSTALL.md) · [修复记录](docs/BUGFIX-2026-11-01.md)
 
-**给 AI 安装：** 把本仓库链接交给具备本机终端权限的 GPT / DS / Codex，说“我要应用这个项目”。先阅读 [AGENTS.md](AGENTS.md) 和 [AI 安装流程](docs/AI-INSTALL.md)。纯云端聊天没有电脑访问权限时，不能声称已在本机安装。
+## AI 从这里开始
 
-## 功能
+接到安装、修复或更新任务后，先读本文件、[AGENTS.md](AGENTS.md) 和 [docs/AI-INSTALL.md](docs/AI-INSTALL.md)，再检查本机。不要停在教程或准备阶段；在用户授权范围内完成安装、运行和验收。
 
-- 背景选择、自选图、亮度/遮罩/模糊、轮播、浅深色适配；内置“ChatGPT 默认背景”，真正移除主题样式。
-- 四个自定义角色槽（默认共用唯一内置图片），透明 PNG、拖拽、贴边、翻转、大小、原按压回弹和音效。
-- 点击显示五小时、每周、可用重置次数；低于 10% 独立常驻提醒，可与点击彩蛋同时显示。
-- 挂件总开关：关闭后隐藏角色并停止本组件的额度请求，设置入口和轻量跟随监听保留，可重新开启。
-- 自定义角色和气泡底图；选择、位置、彩蛋计数及开关记忆。
+1. **认清目标**：只支持 Windows x64、Microsoft Store 注册的 `OpenAI.Codex` 桌面包。其 GUI 进程可能叫 `ChatGPT.exe`。经典 ChatGPT、浏览器网页和 DSH 不是替代目标。
+2. **找到现有安装**：检查本组件快捷方式和 `Mutsumi Codex Companion` 计划任务。已有副本时沿用它的目录，先备份；不要默认另装一份。旧版本可能保留 Mutsumi 名称，这是兼容命名。
+3. **选对安装器**：源码仓库的根 `Install.ps1` 是下载器，`app/Install.ps1` 是实际安装器；完整 Release 解压后直接用根 `Install.ps1`。源码 ZIP 没有 Electron 运行时。
+4. **按真实状态验收**：用安装目录里的 `Status.ps1`。进程存在不等于角色已显示，安装成功不等于额度和背景都成功。下面的状态表是验收标准。
+5. **保留运行中任务**：已有窗口没有主题连接时，报告 `pending-restart`；等待安全退出后，从 **ChatGPT (Work Pet)** 管理入口冷启动。不要强杀客户端，不要把隔离截图当成实际背景接入成功。
 
-## 平台与边界
+没有用户电脑的执行权限时，只能报告完成的代码或安装包，不能声称已在本机安装。不要读取、输出或打包登录凭据、账号标识和聊天数据库；不要消费额度重置机会。
 
-当前公开测试版 `1.1.0-beta.2` 支持 **Windows x64、Microsoft Store 的 OpenAI.Codex 桌面包**。已验证版本 `26.1021.3705.0`，其进程名为 ChatGPT.exe。不是浏览器脚本，也不把经典 ChatGPT 或 DSH 客户端当作同一安装目标。GPT/DS 在这里是执行安装的助手，不能直接套用 DSH 插件安装命令。
+## 本版功能与修复
 
-原生任务栏/MSIX入口不统一接管背景启动参数；需要本项目的 Codex Work Pet 启动入口。首次安装时客户端已运行且没有受校验的本机调试会话，背景会标记为待接入，不会强制退出客户端或伪装成功。完整冷启动联合验收、其他系统/客户端版本，以及不同模式切换路径均需以实际状态报告为准。
+- 四个可自定义角色槽，默认共用唯一内置图片；单击切换、按压回弹、原点击音效、拖拽、贴边翻转、大小与位置记忆。
+- 显示真实五小时和每周剩余额度、可用重置次数；不足 10% 时独立提醒，未知或过期数据不冒充有效数字。
+- 彩蛋每 2–5 次有效点击随机触发，包含 `kskbl`、`zdjd`；保留计数记忆。
+- 客户端背景、自选图、亮度、遮罩、模糊、轮播与浅深色适配；可选原生默认背景。
+- 角色、气泡底图自定义与挂件总开关；关闭挂件会停止本组件的额度请求，设置入口仍可重新开启。
+- 自动识别商店更新后的 CLI 路径；修复额度刷新循环、账号切换的旧请求回写、重复加载相同头像造成的闪烁，以及旧 PID 阻断背景恢复。
 
-## 安装
+内置背景仅保留原生默认与蓝天草地 `IMG3575.jpg`；角色仅内置 `IMG3576.png`，四槽均可自行替换。私人启动动画不随公开包分发；已有单独安装的动画集成会保留。
 
-普通用户下载 Releases 中的完整 Windows ZIP，解压后双击 `Install.cmd`。GitHub 自动生成的 Source code ZIP 不含 Electron 运行时，不能当作完整离线安装包。
+## 安装或更新
 
-源码仓库的安装器位于 `app/Install.ps1`；完整 Release 解压后的安装器位于根目录 `Install.ps1`。使用完整包时直接运行根目录安装器，不需要再次下载 Release。
+普通用户：下载上方 Release 中的完整 Windows ZIP，解压后运行 `Install.cmd`。不要把 GitHub 自动生成的 Source code ZIP 当成完整安装包。
 
-AI 可以先执行：
+AI 在**源码仓库根目录**先执行预检：
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\app\Install.ps1 -PreflightOnly
 ```
 
-克隆仓库后，再执行根目录 `Install.ps1 -Repository 用户名/仓库名 -Launch`。仓库根安装器读取 `release.json`，下载固定版本、核对 SHA-256、检查压缩路径后安装。不要使用 `curl | iex`，不要绕过系统安全或授权提示。
+确定现有安装目录后运行根下载器；更新已有副本时追加 `-InstallRoot "现有安装目录"`：
 
-安装后桌面和开始菜单有 **Codex Work Pet** 与 **Codex Work Pet Settings**。右键角色包含背景入口①、角色/气泡入口②和挂件总开关；关闭角色后可从设置入口或托盘开启。
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\Install.ps1 -Repository xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT -Launch
+```
 
-默认目录是“文档/Codex/codex_work_pet”。运行 `Status.ps1` 获取真实运行状态；运行 `Self-Test.ps1` 执行隔离逻辑检查。安装包不包含账号、凭据、聊天、用量快照或开发者电脑配置。
+根下载器按 `release.json` 下载固定版本，核对 SHA-256 后安装。完整 Release 解压目录直接运行它的 `Install.ps1 -Launch`，不再套用源码下载流程。脚本使用 Windows PowerShell 5.1；不要改用 DSH 注册命令、`curl | iex` 或绕过系统保护。
 
-## 恢复
+默认安装到“文档/Codex/codex_work_pet”。安装器备份已有组件代码并保留用户 `data`。桌面和开始菜单生成 **ChatGPT (Work Pet)**、**Codex Work Pet** 和 **Codex Work Pet Settings**。
 
-`Set-Widget.ps1 -State Off/On` 控制角色；`Restore-Customization.cmd` 恢复示例素材；`Restore-Background.ps1` 移除背景；`Uninstall.cmd` 停用任务并恢复本项目快捷方式，保留用户图片和备份。原客户端、登录、聊天、模型配置和其他插件不删除。
+## 验收标准
 
-这是从开源项目改编的组件，见 [来源和许可](THIRD_PARTY_NOTICES.md)。代码许可不覆盖角色图片等第三方素材。原电脑的龙娘启动动画没有纳入本公开组件，也不会被覆盖。
+在**实际安装目录**运行：
 
-## 界面示例
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\Status.ps1
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\Self-Test.ps1
+```
+
+| 状态 | 应如何判断 |
+| --- | --- |
+| `companionRunning=true` | 本组件已响应，不代表以下功能全部通过 |
+| `widgetEnabled=true`、`widgetVisible=true`、`widgetSurfaceReady=true` | 客户端可见且挂件开启时，角色窗口已显示并具备有效绘制区域 |
+| `quotaStatus=fresh`、`quotaProcessRunning=true` | 官方额度服务已连接；再核对两窗口与可用重置次数 |
+| `widgetEnabled=false`、`quotaProcessRunning=false` | 用户主动关闭挂件时的正常状态 |
+| `backgroundConnected=true` | 背景已在真实客户端会话中验证连接；另检查图片、正文和代码可读性 |
+| `backgroundStatus=pending-restart` | 当前普通窗口未接入主题，需安全退出后从管理入口冷启动，尚未验收背景 |
+| `backgroundStatus=disabled` 或原生默认背景 | 按用户的背景关闭或默认选择处理，不自动重新启用 |
+
+当前已在注册客户端 `26.1023.6621.0` 上确认真实额度恢复，544 项 Node 测试通过，隔离 Electron 交互测试通过。当前真实窗口的完整背景冷启动验收仍待安全退出后完成；不能把这项待验收状态改写为已通过。其他系统、版本和官方通知启动路径未据此保证兼容。
+
+**搜索请用 `ChatGPT (Work Pet)`。** 官方 MSIX 搜索项、原固定图标或通知入口可能绕过主题启动参数；本组件没有接管所有官方入口。
+
+## 使用、恢复与维护
+
+角色右键菜单包含背景入口①、角色/气泡入口②和总开关；隐藏角色后可从设置入口或托盘恢复。
+
+- `Set-Widget.ps1 -State Off` / `On`：关闭或开启挂件。
+- `Restore-Background.ps1`：移除背景并关闭本组件背景监听。
+- `Restore-Customization.cmd`：恢复示例图片与气泡。
+- `Restore-PreviousVersion.ps1 -BackupDirectory "安装目录内的备份"`：恢复已保存的组件版本。
+- `Uninstall.cmd`：停用本组件和自己管理的快捷方式，保留用户图片与备份。
+
+维护者修改代码后运行 `node --test app/widget/tests/*.test.mjs`；发布流程和校验规则见 [docs/BUILD.md](docs/BUILD.md)。不要把个人 `data`、日志、截图、登录或聊天复制进源码和发布包。
 
 ![背景设置](docs/images/background-settings.png)
 ![右键菜单](docs/images/right-menu.png)
 
-图片来自本组件的隔离界面测试，数字是测试数据。更多说明见 [使用与恢复](docs/USER-GUIDE.md)、[验证范围](docs/VERIFICATION.md) 和 [重建发布包](docs/BUILD.md)。
-
-
-## 内置素材精简（发布前更新）
-
-背景选项仅保留 ChatGPT 默认背景和蓝天草地（IMG3575.jpg）。内置挂件角色仅保留当前疑问形象（IMG3576.png）；四个可自定义槽默认共用这一张，点击音效、弹性反馈和彩蛋继续生效。其他背景、表情和旧装饰 GIF 不随本版本分发。自选背景、替换角色/气泡的能力保留。
-
-
-发布前彩蛋文案更新：新增 `kskbl` 和 `zdjd`，保持每 2–5 次有效点击随机触发；气泡只显示彩蛋文字，不添加解释小字。项目宣传名称为「gpt自定义插件」；代码与安装文件继续使用 codex_work_pet。
-
-### 1.1.0-beta.2 更新
-
-额度服务自动跟随商店客户端更新；新增 **ChatGPT (Work Pet)** 搜索入口。已有窗口没有主题连接时，Status.ps1 显示 pending-restart，请安全退出后从此入口冷启动。官方 MSIX 搜索项仍可能绕过主题参数。已有私人动画会保留。
-
-详见 [修复记录](docs/BUGFIX-2026-11-01.md)。
+上图来自隔离界面测试，数字是测试数据。详见 [使用与恢复](docs/USER-GUIDE.md)、[验证范围](docs/VERIFICATION.md) 和 [来源与许可](THIRD_PARTY_NOTICES.md)。代码许可不自动覆盖第三方角色图片或媒体。
