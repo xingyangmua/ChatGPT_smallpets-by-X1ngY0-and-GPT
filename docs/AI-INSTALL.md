@@ -1,6 +1,6 @@
 # AI 安装、更新与接手流程
 
-本文件与 README.md、AGENTS.md 配合使用。当前组件版本为 `1.1.0-beta.4`。这是一套 Windows 本机伴随组件，不是 DSH 插件注册包。
+本文件与 README.md、AGENTS.md 配合使用。当前组件版本为 `1.1.0-beta.5`。这是一套 Windows 本机伴随组件，不是 DSH 插件注册包。
 
 ## 先检查，再执行
 
@@ -59,3 +59,6 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\Install.ps1 -Rep
 最终分别报告代码/安装、角色显示、真实额度、真实背景、GitHub 推送和 Release 附件的状态。给出实际目录、客户端版本、下载链接和剩余待办；不要把源码已推送等同于安装包已发布。
 
 恢复入口：Set-Widget.ps1、Restore-Background.ps1、Restore-Customization.cmd、Restore-PreviousVersion.ps1 和 Uninstall.cmd。保留用户图片与备份，不删除官方客户端和用户资料。
+
+
+2026-11-02 背景故障续修请先读 docs/BACKGROUND-2026-11-02.md。旧版成功记录和隔离测试不构成当前真实背景验收；全入口背景加载尚未实现。

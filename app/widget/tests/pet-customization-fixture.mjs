@@ -1,4 +1,4 @@
-import path from 'node:path';import fs from 'node:fs';import assert from 'node:assert/strict';import {fileURLToPath} from 'node:url';import {dialog} from 'electron';
+import path from 'node:path';import fs from 'node:fs';import assert from 'node:assert/strict';import {fileURLToPath} from 'node:url';import {createRequire} from 'node:module';import {dialog,BrowserWindow,nativeImage,ipcMain} from 'electron';
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
 export async function verifyCustomization({window,setTestCursor,customization,report,output,dispatcher}){
  const ev=code=>window.webContents.executeJavaScript(code),root=fileURLToPath(new URL('..',import.meta.url));
@@ -31,4 +31,19 @@ export async function verifyCustomization({window,setTestCursor,customization,re
  fs.writeFileSync(path.join(output,'custom-bubble.png'),(await window.webContents.capturePage()).toPNG());report.checks.push('Bubble background applies with adjustable visibility while quota remains exactly three rows');
  const expected=customization.store.publicState();await ev(`whaleDesktop.save(Object.fromEntries(Object.keys(localStorage).filter(k=>/^dshw[-v]/.test(k)).map(k=>[k,localStorage.getItem(k)])))`);window.webContents.reload();await wait(()=>ev(`window.MutsumiRole && document.querySelector('.dshwv-img')?.complete && document.querySelector('.dshwv-img')?.src.includes('/mutsumi-custom/')`));assert.deepEqual(customization.store.publicState(),expected);assert.deepEqual(await ev('MutsumiRole.counter'),before);report.checks.push('Renderer restart restores custom slots and bubble without resetting the easter count');
  await pane.webContents.executeJavaScript(`document.querySelector('#widget-reset-all').click()`);await wait(()=>pane.webContents.executeJavaScript(`document.querySelector('#status').textContent.includes('已恢复默认图片')`));await wait(()=>ev(`document.querySelector('.dshwv-img').complete && document.querySelector('.dshwv-img').src.includes('/assets/IMG357')`));assert.equal(customization.store.read().widget.bubble,null);assert.ok(customization.store.read().widget.slots.every(a=>a===null));pane.close();report.checks.push('Widget settings opens through its right-menu entry and restores the sole bundled portrait in all slots and the plain bubble');
+ // A separate fixture store simulates an unavailable real background endpoint.
+ // Its pending selection must remain distinguishable from a rendered image.
+ customization.close();
+ const {createCustomizationController}=createRequire(import.meta.url)('../desktop/customization-controller.cjs');
+ const offline=createCustomizationController({BrowserWindow,dialog,nativeImage,ipcMain,dataDir:path.join(output,'offline-fixture'),root,origin:'whale://widget',getWidgetWindow:()=>window,fixture:true,backgroundPeek:async()=>{throw Error('fixture disconnected');}});
+ try{
+  offline.open('client');pane=offline.panel;await wait(()=>pane.webContents.executeJavaScript(`document.querySelector('#status')?.textContent.includes('未连接')`));
+  await pane.webContents.executeJavaScript(`document.querySelector('#client-apply').click()`);
+  await wait(()=>pane.webContents.executeJavaScript(`document.querySelector('#status').textContent.includes('等待客户端连接后自动应用')`));
+  assert.equal(offline.store.read().client.selectedId,'preset-3575');assert.equal(offline.state().client.connected,false);
+  assert.equal(await pane.webContents.executeJavaScript(`document.querySelector('#client-controls').hidden`),true);
+  await pane.webContents.executeJavaScript(`new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))`);await pause(300);
+  fs.writeFileSync(path.join(output,'offline-background-selection.png'),(await pane.webContents.capturePage()).toPNG());
+  report.checks.push('Disconnected wallpaper selection persists and the real settings UI says pending connection instead of claiming it has rendered');
+ }finally{offline.close();}
 }

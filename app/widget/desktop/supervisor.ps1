@@ -47,10 +47,15 @@ function Send-WhaleHost($State) {
 }
 $whaleFatal = $false
 $whaleStackAttempts = 0; $whaleStackRepairs = 0; $whaleLastStackAttempt = [DateTime]::MinValue
+$whaleBackgroundReconnect=$null
+$whaleInstallRoot=Split-Path $DataDir -Parent
+$whaleBackgroundModule=Join-Path $whaleInstallRoot 'Background-Reconnect.ps1'
+if(Test-Path -LiteralPath $whaleBackgroundModule){. $whaleBackgroundModule;$whaleBackgroundReconnect=New-MutsumiBackgroundReconnect $whaleInstallRoot}
 try {
     while (!$whaleStop.WaitOne(100)) {
         $whaleNow = [DateTime]::UtcNow
         $whaleState = [WhaleWindows]::Probe()
+        if($whaleBackgroundReconnect){try{Invoke-MutsumiBackgroundReconnect $whaleBackgroundReconnect ([bool]$whaleState.hostAlive) ([int]$whaleState.hostPid) $whaleNow}catch{}}
         $whaleConfig = Read-WhaleJson (Join-Path $DataDir 'follow-config.json')
         $whaleStandalone = $whaleConfig.mode -eq 'standalone'
         $whaleState['mode'] = if ($whaleStandalone) { 'standalone' } else { 'follow-codex' }
@@ -131,6 +136,7 @@ try {
     $whaleFatal = $true
     @{ message=$_.Exception.Message; at=[DateTime]::UtcNow.ToString('o') } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $DataDir 'supervisor-error.json') -Encoding utf8
 } finally {
+    if($whaleBackgroundReconnect){Close-MutsumiBackgroundReconnect $whaleBackgroundReconnect}
     [WhaleWindows]::StopFollowing()
     if ($whaleChild) {
         try { [void](Send-WhaleHost @{hostAlive=$false;monitorExit=$true}); $whaleChild.StandardInput.Close(); [void]$whaleChild.WaitForExit(7000) } catch { }

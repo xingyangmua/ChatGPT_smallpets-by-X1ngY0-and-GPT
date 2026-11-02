@@ -44,5 +44,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $m=Get-Content dist/release.json -Raw | ConvertFrom-Json
-          gh release create $m.tag ('dist/'+$m.assetName) dist/SHA256SUMS.txt dist/release.json --title ('codex_work_pet '+$m.version) --notes-file docs/BUGFIX-2026-11-01.md --prerelease --verify-tag
+          gh release create $m.tag ('dist/'+$m.assetName) dist/SHA256SUMS.txt dist/release.json --title ('codex_work_pet '+$m.version) --notes-file docs/RELEASE-NOTES.md --prerelease --verify-tag
           if($LASTEXITCODE -ne 0){throw 'Release publication failed'}

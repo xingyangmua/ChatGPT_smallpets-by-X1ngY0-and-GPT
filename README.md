@@ -1,8 +1,10 @@
 # gpt自定义插件 · codex_work_pet
 
-当前版本：**1.1.0-beta.4**。Windows x64 上的 Codex / ChatGPT Work 背景与角色挂件组件。
+当前版本：**1.1.0-beta.5**。Windows x64 上的 Codex / ChatGPT Work 背景与角色挂件组件。
 
-[下载完整安装包](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/releases/tag/v1.1.0-beta.4) · [AI 安装与接手流程](docs/AI-INSTALL.md) · [修复记录](docs/BUGFIX-2026-11-01.md)
+**2026-11-02 背景修复：** 在客户端 `26.1023.6621.0` 上，经用户安全退出并从 Work Pet 冷启动，真实主题注入与渲染验证通过，背景已连接，角色和真实额度正常。本版修复重复普通激活，新增后台重连、离线保存壁纸和具体失败诊断。官方全部入口的无条件冷启动加载仍未实现，见 [本次背景排查记录](docs/BACKGROUND-2026-11-02.md)。
+
+[下载完整安装包](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/releases/tag/v1.1.0-beta.5) · [AI 安装与接手流程](docs/AI-INSTALL.md) · [修复记录](docs/BACKGROUND-2026-11-02.md)
 
 ## AI 从这里开始
 
@@ -66,9 +68,11 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\Self-Test.ps1
 | `backgroundStatus=pending-restart` | 当前普通窗口未接入主题，需安全退出后从管理入口冷启动，尚未验收背景 |
 | `backgroundStatus=disabled` 或原生默认背景 | 按用户的背景关闭或默认选择处理，不自动重新启用 |
 
-当前已在注册客户端 `26.1023.6621.0` 上确认真实额度恢复，544 项 Node 测试通过，隔离 Electron 交互测试通过。当前真实窗口的完整背景冷启动验收仍待安全退出后完成；不能把这项待验收状态改写为已通过。其他系统、版本和官方通知启动路径未据此保证兼容。
+当前已在注册客户端 `26.1023.6621.0` 上确认真实额度和 Work Pet 冷启动背景连接，552 项 Node 测试及 27 项隔离 Electron 交互检查通过。真实渲染检查确认主题、侧栏和输入框结构就绪；官方其他启动入口、全部换图路径、其他系统与客户端版本未据此保证兼容。
 
 **搜索请用 `ChatGPT (Work Pet)`。** 官方 MSIX 搜索项、原固定图标或通知入口可能绕过主题启动参数；本组件没有接管所有官方入口。
+
+挂件与真实额度由登录后常驻的伴随程序跟随客户端，和背景连接是两条独立链路。当前源码会在任何入口打开客户端后尝试重连**已经开放并验证的**背景端口；它不能给一个没有端口的普通会话补上启动参数。手动换图可在离线时保存为待应用选择，界面会明确提示等待连接，不能把“已保存”当成“已显示”。
 
 ## 使用、恢复与维护
 

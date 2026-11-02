@@ -6,7 +6,7 @@ $r.backgroundStatus=if($r.backgroundConnected){'connected'}else{'unavailable'}
 try{
  $state=Get-Content -LiteralPath (Join-Path $data 'background-state.json') -Raw | ConvertFrom-Json
  if($state.enabled -eq $false){$r.backgroundStatus='disabled'}
- elseif(!$r.backgroundConnected){$connection=Get-Content -LiteralPath (Join-Path $data 'background-connection.json') -Raw | ConvertFrom-Json;$r.backgroundStatus=$connection.status;if($connection.status -eq 'pending-restart'){$r.backgroundNextStep='Close the client safely, then open ChatGPT (Work Pet).'}}
+ elseif(!$r.backgroundConnected){$connection=Get-Content -LiteralPath (Join-Path $data 'background-connection.json') -Raw | ConvertFrom-Json;$r.backgroundStatus=$connection.status;$r.backgroundReason=$connection.reason;if($connection.stage){$r.backgroundStage=$connection.stage};if($connection.status -eq 'pending-restart'){$r.backgroundNextStep='Exit the client safely, including its tray process, then open ChatGPT (Work Pet).'}}
 }catch{}
 try{$install=Get-Content -LiteralPath (Join-Path $data 'mutsumi-install.json') -Raw | ConvertFrom-Json;$r.recordedClientVersion=$install.packageVersion;$r.recordedCliExists=Test-Path -LiteralPath $install.cli}catch{}
 $r | ConvertTo-Json -Depth 5

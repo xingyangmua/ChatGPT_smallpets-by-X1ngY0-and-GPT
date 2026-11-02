@@ -1,4 +1,4 @@
-# 重建与发布 1.1.0-beta.4
+# 重建与发布 1.1.0-beta.5
 
 源码不包含二进制运行时。使用 Python 3.11 或更高版本，准备 Electron 44.3.0 官方 Windows x64 完整 ZIP，保留许可证。该运行时 SHA-256：
 
@@ -10,7 +10,7 @@
 
 ```text
 node --test app/widget/tests/*.test.mjs
-python tools/build_release.py --electron-archive electron-runtime.zip --output dist --version 1.1.0-beta.4
+python tools/build_release.py --electron-archive electron-runtime.zip --output dist --version 1.1.0-beta.5
 ```
 
 生成完整 Windows ZIP、SHA256SUMS.txt 和 release.json，并更新仓库根 release.json。发布前提交更新后的清单，确保版本、标签、附件名和 SHA-256 一致。源码变更若进入 app 目录，必须重建安装包和清单；仅修改根 README 不会自动更新包内 README。

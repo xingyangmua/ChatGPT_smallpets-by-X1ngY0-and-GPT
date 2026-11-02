@@ -11,3 +11,6 @@ Never read, copy, print or upload auth.json contents, credentials, chat database
 Read README.md and docs/AI-INSTALL.md before implementation. Inspect existing installation shortcuts and the companion scheduled task before choosing an install root. Preserve the user's uncommitted work and installation data. Treat quota, avatar visibility, background connection, source push and Release asset publication as separate acceptance results. A pending-restart background is unfinished verification, not success.
 
 For source changes, use the relevant existing tests and `node --test app/widget/tests/*.test.mjs`. Build and verify the complete Windows package according to docs/BUILD.md, update release.json, and verify the published asset before claiming delivery. Do not repeat successful checks for unchanged inputs without a concrete reason.
+
+
+2026-11-02 背景故障续修请先读 docs/BACKGROUND-2026-11-02.md。旧版成功记录和隔离测试不构成当前真实背景验收；全入口背景加载尚未实现。

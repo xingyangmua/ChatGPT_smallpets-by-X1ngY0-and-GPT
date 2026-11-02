@@ -5,17 +5,18 @@ const {execFile}=require('node:child_process');
 const {createCustomizationStore}=require('./customization-store.cjs');
 function createCustomizationController({BrowserWindow,dialog,nativeImage,ipcMain,dataDir,root,origin,getWidgetWindow,onChanged=()=>{},fixture=false,backgroundApply=null,backgroundPeek=null,getWidgetEnabled=()=>true,onWidgetEnabled=()=>{}}){
  const store=createCustomizationStore(dataDir,{decode:bytes=>nativeImage.createFromBuffer(bytes)}),install=path.resolve(root,'..');let panel=null,panelKind='client',pending=false,clientControls=null;
+ const disconnectedMessage='背景设置已保存，等待客户端连接后自动应用；当前窗口未开放背景连接，请安全退出客户端（含托盘）后从 ChatGPT (Work Pet) 打开。';
  const run=(exe,args,options={})=>new Promise((resolve,reject)=>execFile(exe,args,{windowsHide:true,timeout:45000,maxBuffer:4*1024*1024,...options},(error,stdout)=>error?reject(Error('客户端背景暂未连接，已保留原背景')):resolve(stdout)));
  async function peek(){if(fixture&&!backgroundPeek)return {image:0,imageId:'preset-3575',brightness:.9,mask:.34,blur:0,rotation:false,enabled:true};if(backgroundPeek)return backgroundPeek();const text=await run(process.execPath,[path.join(install,'background-engine/scripts/pet-client-api.mjs'),dataDir,'read'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'}});return JSON.parse(text);}
  async function applyBackground(){if(backgroundApply)return backgroundApply();if(fixture)return;await run(process.execPath,[path.join(install,'background-engine/scripts/pet-client-api.mjs'),dataDir,'wait'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'}});}
  async function restoreClient(previous){if(!previous||fixture)return;await run(process.execPath,[path.join(install,'background-engine/scripts/pet-client-api.mjs'),dataDir,'restore',JSON.stringify(previous)],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'}});}
- function state(){const value=store.publicState();value.client.controls=clientControls;value.companion={enabled:getWidgetEnabled()};return value;}
+ function state(){const value=store.publicState();value.client.controls=clientControls;value.client.connected=clientControls!==null;value.companion={enabled:getWidgetEnabled()};return value;}
  function notify(selectSlot){const value=state(),widget=getWidgetWindow();if(widget&&!widget.isDestroyed())widget.webContents.send('mutsumi-customization',{...value,selectSlot});if(panel&&!panel.isDestroyed())panel.webContents.send('mutsumi-customizer-state',value);onChanged(value);return value;}
  async function reload(){const value=notify();try{await applyBackground();return {ok:true,state:value};}catch{return {ok:false,state:value,error:'挂件图片已更新，客户端背景暂未连接'};}}
  async function change(command,selectedFile){
   if(!command||typeof command!=='object')throw Error('图片操作无效');
   const action=command.action,kind=command.kind,slot=command.slot;
-  if(action==='state'){if(panelKind==='client')try{clientControls=await peek();}catch{clientControls=null;}return {ok:true,state:state()};}
+  if(action==='state'){if(panelKind==='client')try{clientControls=await peek();}catch{clientControls=null;}return {ok:true,state:state(),...(!clientControls&&panelKind==='client'?{message:'客户端背景未连接；可以先保存图片，连接后自动应用。'}:{})};}
   if(action==='companion'){if(typeof command.enabled!=='boolean'||pending)throw Error('挂件开关暂不可用');await onWidgetEnabled(command.enabled);return {ok:true,state:notify()};}
   if(!['client','widget','bubble'].includes(kind)&&action!=='opacity')throw Error('图片操作无效');
   if(kind==='widget'&&action!=='reset-all'&&(!Number.isInteger(slot)||slot<0||slot>3))throw Error('请选择一个有效表情');
@@ -32,7 +33,7 @@ function createCustomizationController({BrowserWindow,dialog,nativeImage,ipcMain
     if(result.canceled||!result.filePaths[0])return {ok:true,cancelled:true,state:state()};source=result.filePaths[0];
    }
    const previous=store.read(),next=structuredClone(previous);let clientBefore=null;
-   if(kind==='client')try{clientBefore=await peek();clientControls=clientBefore;}catch{throw Error('客户端背景暂未连接，原背景保持不变');}
+   if(kind==='client')try{clientBefore=await peek();clientControls=clientBefore;}catch{clientControls=null;}
    if(action==='choose'){
     const image=await store.importFile(source,kind);
     if(kind==='client'){next.client.images=next.client.images.filter(a=>a.id!==image.id);next.client.images.push(image);if(next.client.images.length>12)next.client.images.shift();next.client.selectedId=image.id;}
@@ -46,6 +47,7 @@ function createCustomizationController({BrowserWindow,dialog,nativeImage,ipcMain
    else throw Error('图片操作无效');
    if(kind==='client'){next.client.selectionRevision=randomUUID();next.client.resetVisuals=action==='reset';}
    store.write(next);
+   if(kind==='client'&&!clientBefore)return {ok:true,pending:true,message:disconnectedMessage,state:notify()};
    try{if(kind==='client'){await applyBackground();clientControls=await peek();}}
    catch(error){store.write(previous);try{await applyBackground();await restoreClient(clientBefore);}catch{}throw error;}
    return {ok:true,state:notify(kind==='widget'&&Number.isInteger(slot)?slot:undefined)};

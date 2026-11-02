@@ -1,6 +1,6 @@
 {
   "name": "codex_work_pet",
-  "version": "1.1.0-beta.4",
+  "version": "1.1.0-beta.5",
   "description": "Configurable Windows Codex / Work pet and subscription quota companion",
   "type": "module",
   "private": true,
@@ -18,5 +18,5 @@
   },
   "codexBuild": "surface-audio-fix-20261007",
   "distributionName": "codex_work_pet",
-  "releaseTag": "v1.1.0-beta.4"
+  "releaseTag": "v1.1.0-beta.5"
 }

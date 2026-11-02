@@ -24,8 +24,10 @@ try {
   $profile=$virtualProfile;$report.profileResolution='existing MSIX LocalCache Roaming profile'
  }
  $report.stage='launch'
- $launch=Start-DreamSkinCodexForDebugging -Codex $codex -Arguments @('--remote-debugging-address=127.0.0.1',"--remote-debugging-port=$Port","--user-data-dir=$profile") -Port $Port -PreserveProcessIds $baseline
- $report.strategy=$launch.Strategy;$report.argumentStatus=$launch.ArgumentStatus;$report.packageArgumentStatus=$launch.PackageArgumentStatus
+ $null=Start-DreamSkinCodex -Codex $codex -Arguments @('--remote-debugging-address=127.0.0.1',"--remote-debugging-port=$Port","--user-data-dir=$profile")
+ $report.strategy='package-activation'
+ $report.argumentStatus=Wait-DreamSkinCodexDebugArgumentStatus -Codex $codex -Port $Port
+ $report.packageArgumentStatus=$report.argumentStatus
  $report.stage='listener'
  $deadline=(Get-Date).AddSeconds(45);$identity=$null
  do {$identity=Get-DreamSkinVerifiedCdpIdentity -Port $Port -Codex $codex;if($identity){break};Start-Sleep -Milliseconds 500}while((Get-Date) -lt $deadline)
@@ -47,7 +49,10 @@ try {
  $report.stage='injected';$report.ok=$true
 }catch{
  $report.error=$_.Exception.Message
- if($codex -and !$AttachExisting -and $report.stage -ne 'preflight') {try{Stop-DreamSkinCodex -Codex $codex -PreserveProcessIds $baseline;$report.failedDebugSessionClosed=$true}catch{$report.rollbackError=$_.Exception.Message}}
+ # Keep the client alive: a user may already have started a task while the
+ # bounded connection probe was running. A theme failure is never permission
+ # to terminate that task.
+ $report.clientPreserved=$true
 }finally{
  $report.finishedAt=(Get-Date).ToString('o')
  $report | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $Evidence 'background-probe.json') -Encoding UTF8

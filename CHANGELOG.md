@@ -17,3 +17,8 @@ First generic codex_work_pet release preparation. Custom background and native-d
 ## 1.1.0-beta.3
 
 修正 Windows 云端测试中 8.3 临时路径、真实路径和路径大小写的比较；保留严格的文件目标校验。README、AGENTS、AI 安装流程和包内说明同步为新版，分清真实额度、背景待安全重启、源码推送与附件发布。
+
+
+## 1.1.0-beta.5
+
+修复冷启动重复普通激活，新增客户端生命周期背景重连、失败阶段与原因保留、离线保存待应用壁纸。当前 Store 客户端的 Work Pet 冷启动注入与渲染通过，552 项测试和 27 项隔离界面检查通过；官方全部入口的无条件背景冷启动加载尚未实现。详见 docs/BACKGROUND-2026-11-02.md。
