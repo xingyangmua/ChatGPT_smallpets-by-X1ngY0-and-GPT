@@ -14,7 +14,8 @@ const quote=value=>"'"+value.replaceAll("'","''")+"'";
 const write=(file,value)=>{fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,value);};
 const released={status:'released',enabled:false,rollback:'DisableDebugging-succeeded'};
 function fixture(t,{settings,lease,off='release',task='own'}={}){
- const root=fs.mkdtempSync(path.join(os.tmpdir(),'pet-startup-maintenance-'));
+ // PS5 expands 8.3 paths; create every synthetic identity from the same long path.
+ const root=fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(),'pet-startup-maintenance-')));
  t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
  const target=path.join(root,'target'),backup=path.join(target,'backups/previous'),trace=path.join(root,'trace.txt');
  fs.mkdirSync(target,{recursive:true});

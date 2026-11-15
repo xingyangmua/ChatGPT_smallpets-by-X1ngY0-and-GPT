@@ -7,7 +7,8 @@ import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 
 test('official shortcut uses real temporary COM links, preserves metadata and restores only owned changes',{skip:process.platform!=='win32'},t=>{
- const root=fs.mkdtempSync(path.join(os.tmpdir(),'pet-official-shortcut-'));
+ // COM and Windows PowerShell expand 8.3 TEMP aliases to their long paths.
+ const root=fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(),'pet-official-shortcut-')));
  t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
  const module=fileURLToPath(new URL('../../Official-Shortcut.ps1',import.meta.url));
  const q=value=>"'"+value.replaceAll("'","''")+"'";

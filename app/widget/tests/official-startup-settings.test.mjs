@@ -11,8 +11,9 @@ const source=fileURLToPath(new URL('../../',import.meta.url));
 const quote=value=>"'"+value.replaceAll("'","''")+"'";
 const windows={skip:process.platform!=='win32'};
 function run(t,body) {
- const root=fs.mkdtempSync(path.join(os.tmpdir(),'pet-startup-settings-'));
- t.after(()=>{assert.ok(path.resolve(root).startsWith(path.resolve(os.tmpdir())+path.sep));fs.rmSync(root,{recursive:true,force:true});});
+ // Match Windows PowerShell's long-path form before asserting caller identity.
+ const root=fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(),'pet-startup-settings-')));
+ t.after(()=>{assert.ok(path.resolve(root).startsWith(fs.realpathSync.native(os.tmpdir())+path.sep));fs.rmSync(root,{recursive:true,force:true});});
  const module=path.join(root,'official-startup');fs.mkdirSync(module);
  fs.mkdirSync(path.join(root,'data/official-startup'),{recursive:true});
  for(const file of ['Set-OfficialStartup.ps1','Official-Startup.ps1'])fs.copyFileSync(path.join(source,file),path.join(root,file));
