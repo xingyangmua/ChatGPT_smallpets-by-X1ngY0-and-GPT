@@ -18,8 +18,9 @@ function Invoke-MutsumiBackgroundReconnect($Monitor,[bool]$HostAlive,[int]$HostP
  $Monitor.nextAttempt=$Now.AddSeconds(30)
  try{
   $stateFile=Join-Path $Monitor.root 'data\background-state.json'
-  if(Test-Path -LiteralPath $stateFile){$state=Get-Content -LiteralPath $stateFile -Raw | ConvertFrom-Json;if($state.enabled -eq $false){return}}
-  $script=Join-Path $Monitor.root 'Background-Start.ps1'
+  $observer=Join-Path $Monitor.root 'Observe-Client.ps1'
+  if(Test-Path -LiteralPath $stateFile){$state=Get-Content -LiteralPath $stateFile -Raw | ConvertFrom-Json;if($state.enabled -eq $false -and !(Test-Path -LiteralPath $observer)){return}}
+  $script=if(Test-Path -LiteralPath $observer){$observer}else{Join-Path $Monitor.root 'Background-Start.ps1'}
   if(!(Test-Path -LiteralPath $script)){return}
   $ps=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
   $reconnectArguments='-NoLogo -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -File "'+$script+'" -InstallRoot "'+$Monitor.root+'" -AttachOnly'

@@ -7,6 +7,12 @@ import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 const source=fileURLToPath(new URL('../../',import.meta.url));
 const quote=s=>"'"+s.replaceAll("'","''")+"'";
+function copyBackgroundStart(root){
+ // Isolated tests must not acquire the live companion's kernel mutex or
+ // interfere with another checkout's tests running at the same time.
+ const text=fs.readFileSync(path.join(source,'Background-Start.ps1'),'utf8');
+ fs.writeFileSync(path.join(root,'Background-Start.ps1'),text.replaceAll('Local\\MutsumiBackgroundStart','Local\\MutsumiBackgroundFixture-'+path.basename(root)));
+}
 function run(t,body,setup=()=>{}){
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'pet-background-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
  fs.mkdirSync(path.join(root,'data'));setup(root);
@@ -30,7 +36,7 @@ test('background restore completes with a recycled PID and never stops that proc
 });
 test('ordinary search activation is reported pending without launching or killing the current client',{skip:process.platform!=='win32'},t=>{
  const root=run(t,`& (Join-Path $root 'Background-Start.ps1') -InstallRoot $root`,root=>{
- fs.copyFileSync(path.join(source,'Background-Start.ps1'),path.join(root,'Background-Start.ps1'));
+ copyBackgroundStart(root);
  fs.writeFileSync(path.join(root,'Runtime-Paths.ps1'),"function Get-MutsumiNode {param($r) 'unused'}");
  fs.mkdirSync(path.join(root,'background-engine/scripts'),{recursive:true});
  fs.writeFileSync(path.join(root,'background-engine/scripts/common-windows.ps1'),"function Get-DreamSkinCodexInstall { @{Version='test'} }\nfunction Get-DreamSkinCodexProcesses {param($Codex) @{ProcessId=123}}\nfunction Get-DreamSkinVerifiedCdpIdentity {param($Port,$Codex) $null}\nfunction Stop-DreamSkinCodex {throw 'must not stop'}");
@@ -56,7 +62,7 @@ test('cold theme launch never falls through to a second normal or animation laun
 
 test('attach-only monitoring never launches a missing client',{skip:process.platform!=='win32'},t=>{
  const root=run(t,`& (Join-Path $root 'Background-Start.ps1') -InstallRoot $root -AttachOnly`,root=>{
- fs.copyFileSync(path.join(source,'Background-Start.ps1'),path.join(root,'Background-Start.ps1'));
+ copyBackgroundStart(root);
  fs.writeFileSync(path.join(root,'Runtime-Paths.ps1'),"function Get-MutsumiNode {param($r) 'unused'}");
  fs.mkdirSync(path.join(root,'background-engine/scripts'),{recursive:true});
  fs.writeFileSync(path.join(root,'background-engine/scripts/common-windows.ps1'),"function Get-DreamSkinCodexInstall { @{Version='test'} }\nfunction Get-DreamSkinCodexProcesses {param($Codex) @()}\nfunction Start-DreamSkinCodex {throw 'must not launch'}");
@@ -65,7 +71,7 @@ test('attach-only monitoring never launches a missing client',{skip:process.plat
 
 test('background start failure replaces stale pending status with its actual reason',{skip:process.platform!=='win32'},t=>{
  const root=run(t,`& (Join-Path $root 'Background-Start.ps1') -InstallRoot $root`,root=>{
- fs.copyFileSync(path.join(source,'Background-Start.ps1'),path.join(root,'Background-Start.ps1'));
+ copyBackgroundStart(root);
  fs.writeFileSync(path.join(root,'Runtime-Paths.ps1'),"function Get-MutsumiNode {param($r) throw 'runtime fixture failure'}");
  fs.writeFileSync(path.join(root,'data/background-connection.json'),JSON.stringify({status:'pending-restart'}));
  });const result=JSON.parse(fs.readFileSync(path.join(root,'data/background-connection.json'),'utf8').replace(/^\uFEFF/,''));assert.equal(result.status,'failed');assert.equal(result.reason,'runtime fixture failure');
@@ -73,7 +79,7 @@ test('background start failure replaces stale pending status with its actual rea
 
 test('ordinary reconnect does not erase a cold-start failure for the same client session',{skip:process.platform!=='win32'},t=>{
  const root=run(t,`& (Join-Path $root 'Background-Start.ps1') -InstallRoot $root -AttachOnly`,root=>{
- fs.copyFileSync(path.join(source,'Background-Start.ps1'),path.join(root,'Background-Start.ps1'));
+ copyBackgroundStart(root);
  fs.writeFileSync(path.join(root,'Runtime-Paths.ps1'),"function Get-MutsumiNode {param($r) 'unused'}");
  fs.mkdirSync(path.join(root,'background-engine/scripts'),{recursive:true});
  fs.writeFileSync(path.join(root,'background-engine/scripts/common-windows.ps1'),"function Get-DreamSkinCodexInstall { @{Version='test'} }\nfunction Get-DreamSkinCodexProcesses {param($Codex) @{ProcessId=123;ParentProcessId=1;CreationDate='fixture-start'}}\nfunction Get-NetTCPConnection {param($State,$LocalPort,$ErrorAction) @()}\nfunction Get-DreamSkinVerifiedCdpIdentity {throw 'No listener must never be contacted'}");

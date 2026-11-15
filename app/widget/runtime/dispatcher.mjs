@@ -32,8 +32,24 @@ export function createDispatcher({ dataDir = DATA_HOME, service = null, monitor 
   const insights = createInsightsService(whale.config);
   const displayModeFile = path.join(dataDir, 'display-mode.json');
   const displayMode = () => readJson(displayModeFile, {}).mode === 'subscription' ? 'subscription' : 'api';
-  const install=readJson(path.join(dataDir,'mutsumi-install.json'),{});
-  const quota=new QuotaMonitor({dataDir,codexHome:install.codexHome||whale.config.codexHome,cli:install.cli,fixture:process.env.MUTSUMI_TEST==='1',enabled:readJson(path.join(dataDir,'companion-settings.json'),{}).widgetEnabled!==false});
+  // This discovery record can be rebuilt from the registered desktop package.
+  // Its failure must not take down the avatar/settings, or silently switch the
+  // quota reader to a different profile while the saved profile is unknown.
+  let install = {}, installError = '';
+  try {
+    const saved = readJson(path.join(dataDir, 'mutsumi-install.json'), undefined);
+    if (saved !== undefined) {
+      if (!saved || typeof saved !== 'object' || Array.isArray(saved) || !Object.hasOwn(saved, 'codexHome')) throw Error('invalid-install');
+      install = saved;
+      const absolute = value => typeof value === 'string' && !value.includes('\0') &&
+        (process.platform === 'win32' ? /^(?:[A-Za-z]:[\\/]|\\\\[^\\/]+[\\/][^\\/]+(?:[\\/]|$))/.test(value) : path.isAbsolute(value));
+      for (const key of ['codexHome', 'cli']) if (Object.hasOwn(install, key) && !absolute(install[key])) throw Error('invalid-install');
+    }
+  } catch {
+    install = {};
+    installError = '安装记录损坏或不可读，修复后重新打开挂件以恢复额度';
+  }
+  const quota=new QuotaMonitor({dataDir,codexHome:install.codexHome||whale.config.codexHome,cli:install.cli,blockedReason:installError,fixture:process.env.MUTSUMI_TEST==='1',enabled:readJson(path.join(dataDir,'companion-settings.json'),{}).widgetEnabled!==false});
   let lastManualQuota=0;
   const routes = new Map(), effects = [];
   createWidgetHost(dataDir).apply({ whale, webServer: { register: r => { routes.set(r.path, r.handler); return () => routes.delete(r.path); }, tapIndex: () => () => {} }, effect: f => effects.push(f()) });

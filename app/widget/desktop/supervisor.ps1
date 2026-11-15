@@ -51,9 +51,17 @@ $whaleBackgroundReconnect=$null
 $whaleInstallRoot=Split-Path $DataDir -Parent
 $whaleBackgroundModule=Join-Path $whaleInstallRoot 'Background-Reconnect.ps1'
 if(Test-Path -LiteralPath $whaleBackgroundModule){. $whaleBackgroundModule;$whaleBackgroundReconnect=New-MutsumiBackgroundReconnect $whaleInstallRoot}
+$whaleOfficialStartup=$null
+$whaleStartupModule=Join-Path $whaleInstallRoot 'Official-Startup.ps1'
+if(Test-Path -LiteralPath $whaleStartupModule){. $whaleStartupModule;$whaleOfficialStartup=New-MutsumiOfficialStartup $whaleInstallRoot}
+$whaleOfficialShortcut=$null
+$whaleShortcutModule=Join-Path $whaleInstallRoot 'Official-Shortcut.ps1'
+if(Test-Path -LiteralPath $whaleShortcutModule){. $whaleShortcutModule;$whaleOfficialShortcut=New-MutsumiOfficialShortcut $whaleInstallRoot}
 try {
     while (!$whaleStop.WaitOne(100)) {
         $whaleNow = [DateTime]::UtcNow
+        if($whaleOfficialStartup){try{Invoke-MutsumiOfficialStartup $whaleOfficialStartup $whaleNow}catch{}}
+        if($whaleOfficialShortcut){try{Invoke-MutsumiOfficialShortcut $whaleOfficialShortcut $whaleNow}catch{}}
         $whaleState = [WhaleWindows]::Probe()
         if($whaleBackgroundReconnect){try{Invoke-MutsumiBackgroundReconnect $whaleBackgroundReconnect ([bool]$whaleState.hostAlive) ([int]$whaleState.hostPid) $whaleNow}catch{}}
         $whaleConfig = Read-WhaleJson (Join-Path $DataDir 'follow-config.json')
@@ -136,6 +144,7 @@ try {
     $whaleFatal = $true
     @{ message=$_.Exception.Message; at=[DateTime]::UtcNow.ToString('o') } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $DataDir 'supervisor-error.json') -Encoding utf8
 } finally {
+    if($whaleOfficialStartup){Close-MutsumiOfficialStartup $whaleOfficialStartup}
     if($whaleBackgroundReconnect){Close-MutsumiBackgroundReconnect $whaleBackgroundReconnect}
     [WhaleWindows]::StopFollowing()
     if ($whaleChild) {

@@ -11,6 +11,7 @@ $compiler=Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 if(!$SettingsOnly){
  & $compiler /nologo /target:winexe /platform:x64 ('/win32icon:'+$iconFile) ('/out:'+(Join-Path $InstallRoot 'codex_work_pet.exe')) (Join-Path $InstallRoot 'ClientLauncher.cs')
  if($LASTEXITCODE -ne 0){throw 'Client entry compilation failed'}
+ if(Test-Path -LiteralPath (Join-Path $InstallRoot 'Build-Animation.ps1')){& (Join-Path $InstallRoot 'Build-Animation.ps1') -InstallRoot $InstallRoot}
 }
 & $compiler /nologo /target:winexe /platform:x64 /reference:System.Windows.Forms.dll ('/win32icon:'+$iconFile) ('/out:'+(Join-Path $InstallRoot 'codex_work_pet_settings.exe')) (Join-Path $InstallRoot 'SettingsLauncher.cs')
 if($LASTEXITCODE -ne 0){throw 'Settings entry compilation failed'}

@@ -24,6 +24,8 @@ jobs:
           if($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -cne $m.tag){throw 'Release tag mismatch'}
           node --test app/widget/tests/*.test.mjs
           if($LASTEXITCODE -ne 0){throw 'Tests failed'}
+          node --test adapters/dsh/tests/*.test.mjs
+          if($LASTEXITCODE -ne 0){throw 'DSH adapter tests failed'}
       - name: Download fixed Electron runtime
         shell: pwsh
         run: |
@@ -37,12 +39,33 @@ jobs:
           if($LASTEXITCODE -ne 0){throw 'Build failed'}
           $actual=Get-Content dist/release.json -Raw | ConvertFrom-Json
           if($actual.sha256 -cne $expected.sha256){throw 'Reproducible package checksum mismatch'}
+          $dsh=@(npm pack ./adapters/dsh --ignore-scripts --pack-destination dist --json | ConvertFrom-Json)
+          if($LASTEXITCODE -ne 0 -or $dsh.Count -ne 1){throw 'DSH package build failed'}
+          $dshPackage=Get-Content adapters/dsh/package.json -Raw | ConvertFrom-Json
+          if($dsh[0].filename -cne ('dsh-work-pet-'+$dshPackage.version+'.tgz')){throw 'DSH package name mismatch'}
+          $dshHash=(Get-FileHash ('dist/'+$dsh[0].filename) -Algorithm SHA256).Hash.ToLowerInvariant()
+          ($dshHash+'  '+$dsh[0].filename) | Set-Content dist/DSH-SHA256SUMS.txt -Encoding ascii
       - name: Publish versioned package
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' || (github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]'))
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           $m=Get-Content dist/release.json -Raw | ConvertFrom-Json
-          gh release create $m.tag ('dist/'+$m.assetName) dist/SHA256SUMS.txt dist/release.json --title ('codex_work_pet '+$m.version) --notes-file docs/RELEASE-NOTES.md --prerelease --verify-tag
+          $dsh=Get-Content adapters/dsh/package.json -Raw | ConvertFrom-Json
+          $tagRef='refs/tags/'+$m.tag
+          $remoteTags=@(git ls-remote --tags origin $tagRef ($tagRef+'^{}'))
+          if($LASTEXITCODE -ne 0){throw 'Cannot verify release tag identity'}
+          if($remoteTags.Count -gt 0){
+            $peeled=@($remoteTags | Where-Object {$_ -match '\^\{\}$'})
+            $target=if($peeled.Count){($peeled[0] -split '\s+')[0]}else{($remoteTags[0] -split '\s+')[0]}
+            if($target -cne $env:GITHUB_SHA){throw 'Existing release tag points to another commit; preserved'}
+          }else{
+            if($env:GITHUB_REF_TYPE -eq 'tag'){throw 'Triggered release tag is missing'}
+            git tag $m.tag $env:GITHUB_SHA
+            if($LASTEXITCODE -ne 0){throw 'Cannot prepare the new release tag'}
+            git push origin $tagRef
+            if($LASTEXITCODE -ne 0){throw 'Cannot create the new release tag; no force update attempted'}
+          }
+          gh release create $m.tag ('dist/'+$m.assetName) dist/SHA256SUMS.txt dist/release.json ('dist/dsh-work-pet-'+$dsh.version+'.tgz') dist/DSH-SHA256SUMS.txt --title ('codex_work_pet '+$m.version) --notes-file docs/RELEASE-NOTES.md --prerelease --verify-tag
           if($LASTEXITCODE -ne 0){throw 'Release publication failed'}

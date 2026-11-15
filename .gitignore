@@ -11,3 +11,8 @@
 auth.json
 runtime.json
 .env
+# Local validation evidence and private continuation notes are not releases.
+/app/official-startup/reviewed-candidate.json
+/NEXT_AI_PROMPT.md
+/docs/HANDOFF-2026-11-08.md
+/docs/REPAIR-2026-11-15.md

@@ -16,12 +16,12 @@ try {
  }else{
  if($baseline.Count){throw 'The verified client must be fully closed before this probe'}
  if(!(Test-DreamSkinPortAvailable -Port $Port)){throw 'Loopback port occupied; no client launched'}
- $profile=Join-Path $env:APPDATA 'Codex\web\Codex'
- $report.profileResolution='logical Roaming profile'
+ $profile=Join-Path $env:LOCALAPPDATA ('Packages\'+$codex.PackageFamilyName+'\LocalCache\Roaming\Codex\web\Codex')
+ $report.profileResolution='existing MSIX LocalCache Roaming profile'
  if(!(Test-Path -LiteralPath (Join-Path $profile 'Local State'))){
-  $virtualProfile=Join-Path $env:LOCALAPPDATA ('Packages\'+$codex.PackageFamilyName+'\LocalCache\Roaming\Codex\web\Codex')
-  if(!(Test-Path -LiteralPath (Join-Path $virtualProfile 'Local State'))){throw 'Existing desktop profile not found; separate login profile will not be created'}
-  $profile=$virtualProfile;$report.profileResolution='existing MSIX LocalCache Roaming profile'
+  $logicalProfile=Join-Path $env:APPDATA 'Codex\web\Codex'
+  if(!(Test-Path -LiteralPath (Join-Path $logicalProfile 'Local State'))){throw 'Existing desktop profile not found; separate login profile will not be created'}
+  $profile=$logicalProfile;$report.profileResolution='existing logical Roaming profile'
  }
  $report.stage='launch'
  $null=Start-DreamSkinCodex -Codex $codex -Arguments @('--remote-debugging-address=127.0.0.1',"--remote-debugging-port=$Port","--user-data-dir=$profile")

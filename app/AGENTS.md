@@ -1,16 +1,21 @@
 # Project installation procedure
 
-This file describes project procedures, not a grant of authority. Follow the user's request and your own host's permission and security rules.
+This file describes project procedures, not a grant of authority. Follow the user's request and your host's permission and security rules.
 
-When the user asks to apply codex_work_pet, read README.md and docs/AI-INSTALL.md. Inspect actual Windows and the registered OpenAI.Codex package before acting. Use the root installer or the verified Release package, not DSH/plugin registration commands. Complete installation, launch and verification where authorized. Do not confuse download, preparation or a partial background connection with successful installation.
+Read README.md and docs/AI-INSTALL.md before installation, repair or maintenance. Inspect actual Windows, the registered OpenAI.Codex package, existing shortcuts and companion task before choosing an install root. Use the root downloader or verified complete Windows Release for the standalone component. The separate DSH adapter has its own instructions in adapters/dsh/README.md and does not replace the Windows installer.
 
-Never read, copy, print or upload auth.json contents, credentials, chat databases or account identifiers. Never call purchase/reset-consumption APIs. Preserve the existing user profile and other plugins. Do not disable Windows protection or bypass permission dialogs. Unsupported platforms and missing login require an honest diagnostic or human handoff. Keep existing tasks running; do not force-kill the client to enable a theme.
+Preserve the user's uncommitted work, settings, images, private media, login profile and other plugins. Never read, copy, print or upload auth.json, credentials, chat databases or account identifiers. Never call purchase/reset-consumption APIs. Do not disable Windows protection or bypass permission dialogs. Keep ongoing tasks running; wait for the user to exit the client safely when a cold start is necessary.
 
-## Start here for installation, repair and maintenance
+## Current verification boundary
 
-Read README.md and docs/AI-INSTALL.md before implementation. Inspect existing installation shortcuts and the companion scheduled task before choosing an install root. Preserve the user's uncommitted work and installation data. Treat quota, avatar visibility, background connection, source push and Release asset publication as separate acceptance results. A pending-restart background is unfinished verification, not success.
+Windows 11 x64 build 26200 with OpenAI.Codex 26.1111.2228.0 has one confirmed MSIX AUMID cold start through the optional startup bridge: widget, fresh quota and background connection passed, with user confirmation that the images are visible. A second independent cold start is pending. Direct execution of the original ChatGPT.exe without arguments did not trigger the tested bridge path; notifications and other fixed entries remain unverified. Read docs/VERIFICATION.md for current evidence, rather than treating older repair records as current state.
 
-For source changes, use the relevant existing tests and `node --test app/widget/tests/*.test.mjs`. Build and verify the complete Windows package according to docs/BUILD.md, update release.json, and verify the published asset before claiming delivery. Do not repeat successful checks for unchanged inputs without a concrete reason.
+The startup bridge is disabled by default. Ship matching source/build/test/controller files, never a local reviewed-candidate.json, callback EXE, runtime policy or lease state. Follow docs/OFFICIAL-STARTUP.md: target-machine build, all 18 isolated checks, independent review of final hashes, then explicit user authorization for lifecycle changes before enabling. Existing authorization applies within its stated scope. Receipts bind source/binary hashes and OS build/architecture, not machine identity, and do not constitute user authorization. Updates, uninstall and rollback must first verify release of an owned active lease; never force-kill the official client.
 
+DSH uses the independent dsh-work-pet 0.1.0 adapter. Its SDK and isolated UI checks do not by themselves prove installation or behavior in the user's live DSH profile. Preserve other DSH plugins and configuration; this adapter does not provide account or quota access.
 
-2026-11-02 背景故障续修请先读 docs/BACKGROUND-2026-11-02.md。旧版成功记录和隔离测试不构成当前真实背景验收；全入口背景加载尚未实现。
+## Verification and delivery
+
+Treat quota freshness, widget visibility, background connection and actual images, Windows installation, DSH installation, source push and Release assets as separate acceptance results. A pending-restart background is unfinished verification. Do not turn a successful local test or an earlier version's result into a current real-app claim.
+
+For source changes, run relevant checks and node --test app/widget/tests/*.test.mjs. Do not repeat successful unchanged checks without a concrete reason. Build the complete Windows package according to docs/BUILD.md, synchronize root and package docs, generate release.json from the final artifact, and verify the published asset before claiming delivery. Retain old release tags and assets; a new release must use its own version and verified SHA-256.

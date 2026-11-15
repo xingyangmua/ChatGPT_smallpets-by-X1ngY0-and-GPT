@@ -1,64 +1,57 @@
-# AI 安装、更新与接手流程
+# 安装、维护与验收
 
-本文件与 README.md、AGENTS.md 配合使用。当前组件版本为 `1.1.0-beta.5`。这是一套 Windows 本机伴随组件，不是 DSH 插件注册包。
+本流程适用于 `codex_work_pet 1.1.0-beta.6` 的 Windows 伴随组件。DSH 使用独立的 `dsh-work-pet` 包，按[适配器说明](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/tree/main/adapters/dsh)操作；两种安装方式不能互换。
 
-## 先检查，再执行
+## 安装前
 
-1. 确认用户指定的仓库及 `git remote get-url origin`。阅读根与目标目录的 AGENTS.md；本文件不授予额外权限。
-2. 检查 Windows x64、Windows PowerShell 5.1，以及 `Get-AppxPackage -Name OpenAI.Codex` 返回的真实安装位置。不要沿用旧版 WindowsApps 目录，不用浏览器或经典 ChatGPT 代替。
-3. 从本组件快捷方式与 `Mutsumi Codex Companion` 计划任务找出现有安装目录。存在旧副本就沿用并备份；`MutsumiCodex` 等历史目录名可以保留。不要在默认路径再并行安装第二份。
-4. 用实际安装目录的 Status.ps1 记录当前角色、额度、背景和开关状态。检查当前是否有正在运行的任务，保留用户图片、设置、登录、聊天和其他插件。
+1. 阅读 README 和当前 AGENTS.md，核对实际注册的 `OpenAI.Codex` 包及 GUI 路径；不要沿用历史 WindowsApps 路径。
+2. 从已有组件快捷方式和 `Mutsumi Codex Companion` 任务确认原安装目录，沿用并备份。保留图片、动画素材、设置、登录、聊天和其他插件。
+3. 记录实际安装目录的 `Status.ps1` 结果。若客户端正在处理任务，保持运行；需要冷启动时等待用户正常退出。
 
-## 判断手上的文件
+不要读取、复制或公开 `auth.json`、凭据、账号标识、聊天数据库；不要调用购买或额度重置接口。
 
-| 文件形态 | 预检和安装方法 |
+主题启动应优先使用已有的商店版登录档，仅在其不存在时回退到已有的普通目录。判断目录和必要文件是否存在即可，不读取登录档内容，不创建替代登录档。
+
+## 选择安装方式
+
+| 文件来源 | 使用方式 |
 | --- | --- |
-| 克隆的源码，含 `app/Install.ps1`、根 `release.json` | 用 `app/Install.ps1 -PreflightOnly` 预检，再用根 `Install.ps1 -Repository OWNER/REPO` 下载经过哈希校验的完整包 |
-| 完整 Release，根目录含 `Install.ps1` 与 `electron-runtime.zip` | 直接运行根 `Install.ps1`，无需再次下载 |
-| GitHub Source code ZIP | 属于源码，不含完整运行时；不能直接当作离线安装包 |
+| 完整 Windows Release ZIP | 解压后运行其根目录 `Install.cmd` 或 `Install.ps1` |
+| 源码仓库 | 根 `Install.ps1` 按 `release.json` 下载并验证完整包；`app/Install.ps1` 是实际安装器 |
+| GitHub Source code ZIP | 只有源码，不能直接当完整安装包 |
+| DSH 适配包 | 使用适配器文档中已验证的 DSH 插件安装入口 |
 
-脚本参数均在 Windows PowerShell 5.1 下执行，示例：
+源码预检与更新示例：
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\app\Install.ps1 -PreflightOnly -InstallRoot "现有安装目录"
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\Install.ps1 -Repository xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT -InstallRoot "现有安装目录" -Launch
 ```
 
-全新安装可省略 `-InstallRoot`，默认使用“文档/Codex/codex_work_pet”。完整 Release 使用根安装器同样的 `-InstallRoot`、`-Launch` 参数。校验、平台注册或系统权限失败应诊断并报告，不改用未经校验的包或绕过保护。
+Windows 安装脚本使用 Windows PowerShell 5.1。校验或系统权限失败时报告原因，不绕过保护。若官方启动桥租约仍活动，先使用已安装的 `Disable-OfficialStartup.cmd` 并核实撤销，再更新；安装不会自动代替用户授权开启启动桥。
 
-## 安装或更新后必须完成
+## 官方开始菜单入口
 
-- 安装器已备份旧组件代码，并保留 `data`；从 receipt.json 确认安装目录与组件版本。
-- 运行 Status.ps1。开启状态且客户端可见时，检查 `companionRunning`、`widgetVisible`、`widgetSurfaceReady` 为 true，`quotaStatus=fresh`。角色主动关闭时，`widgetEnabled=false`、`quotaProcessRunning=false` 是正常状态。
-- 运行 Self-Test.ps1；修改源码时运行 `node --test app/widget/tests/*.test.mjs`。已通过且未改变的检查无需反复重跑。
-- 实测角色单击、拖拽不误触、音效、右键设置、总开关与重新开启。隔离测试数据只能进入独立测试目录，不得注入真实账号显示。
-- 核对真实额度的 300 / 10080 分钟窗口、有效 `usedPercent`、`resetsAt` 和 `rateLimitResetCredits.availableCount`。未知、过期或失败不可显示成零或 100%，也不可消费重置机会。
+官方 MSIX 包入口与同名普通快捷方式不同。当前 Windows 11 x64 build 26200 上，启用启动桥后，从 `OpenAI.Codex_2p2nqsd0c76g0!App` 无参数冷启动已经取得一次挂件、额度和背景连接成功记录。原版 EXE 的直接无参数启动不受本轮验证的桥接路径支持；通知和其他固定项另行验收。
 
-## 背景的特殊验收
+默认安装只提供源码及工具。需要启用时，遵循 [OFFICIAL-STARTUP.md](OFFICIAL-STARTUP.md)：在目标机器上以安装后的精确源码构建，完成 14 项功能/故障测试与 4 项身份测试，由独立审查者核对结果和最终文件哈希，再生成本机审查记录。明确说明包生命周期变化并取得用户确认后，才运行开启命令。需要自动跟随同一应用更新时，另取得该范围的授权。
 
-使用 **ChatGPT (Work Pet)** 搜索入口或 **Codex Work Pet** 管理入口。官方 MSIX 搜索项、任务栏旧固定项与通知入口仍可能绕过主题参数。
+公开包不附带 `StartupBridge.exe`、`reviewed-candidate.json` 或任何租约/策略文件。审查记录不代替授权，也不保证当前客户端已连接；启用后仍需让用户安全退出再从精确 MSIX 入口冷启动验收。
 
-已有受验证主题会话时可以重连。运行中的普通窗口没有主题连接时，`backgroundStatus=pending-restart` 是待办，不是成功。保留当前任务，等安全退出后从管理入口冷启动；不能强杀客户端、创建替代登录档案或用外部预览页冒充背景。只有 `backgroundConnected=true` 且实际图片和文本检查通过，才能报告真实背景完成。
+## 验收
 
-用户选择关闭或原生默认背景时应尊重其选择，不自动重新打开。后台监听旧 PID 被复用时保留无关进程，不依此阻断本组件的恢复。
+- 挂件：`companionRunning`、`widgetVisible`、`widgetSurfaceReady`，再检查实际点击、拖动、设置和开关。
+- 额度：`quotaStatus=fresh` 表示官方服务连接；错误或过期数据不能冒充零或有效额度。用户关闭挂件后停止额度请求属于正常行为。
+- 背景：要求 `backgroundConnected=true`，并实际检查图片、侧栏、正文和输入框。`pending-restart`、选图已保存或隔离测试通过都不等于实机背景成功。
+- 动画：检查真实画面和交接，不只看请求记录；缺少私人媒体时不应阻止正常启动。
+- DSH：检查实际插件加载、背景/角色显示、开关、换图和移除；SDK 集成测试不替代真实 DSH 窗口。
 
-## 常见故障
+每个启动入口单独记录：管理入口、用户级官方 `ChatGPT.lnk`、MSIX AUMID、无参数原版 EXE、通知。普通快捷方式与 MSIX 条目可能同名，不能互相替代验收。
 
-| 现象 | 先检查什么 |
-| --- | --- |
-| 商店更新后额度不可用 | 当前注册包及 CLI 是否存在；新版每次连接都会重新发现 CLI，可用 Repair-Client.ps1 修复安装记录，再检查挂件健康状态 |
-| 额度接口失败 | 只读账号状态、当前网络与退避状态；登录只由用户在官方流程完成，不读取 auth.json 或索要 token |
-| 角色不见了 | 总开关、客户端可见性、绘制区域和位置；进程存活不能代替角色可见验收 |
-| 搜索打开后没有背景 | 是否打开了官方 MSIX 项；查看 pending-restart 状态并使用管理入口 |
-| 下载 404 或校验失败 | Release 标签、完整 ZIP、release.json 和 SHA256SUMS 是否一致，不能静默换版本 |
+## 维护与交付
 
-## 维护和交付
+运行适用回归与安装自检；已通过且未改变的检查无需重复。源码进入 `app` 时须重建完整包和 `release.json`，同步根目录与包内文档，详见 BUILD.md。
 
-代码修改前检查 git 状态，保留用户未提交内容；按实际缺陷补必要回归，不重写无关功能。版本、锁文件、运行时、安装器与 release.json 必须一致。完整打包和发布见 BUILD.md。
+恢复入口为 `Restore-Background.ps1`、`Set-Widget.ps1`、`Restore-PreviousVersion.ps1` 和 `Uninstall.cmd`。卸载或回退应先撤销本组件拥有的入口维护，保留用户资料及第三方插件。
 
-最终分别报告代码/安装、角色显示、真实额度、真实背景、GitHub 推送和 Release 附件的状态。给出实际目录、客户端版本、下载链接和剩余待办；不要把源码已推送等同于安装包已发布。
-
-恢复入口：Set-Widget.ps1、Restore-Background.ps1、Restore-Customization.cmd、Restore-PreviousVersion.ps1 和 Uninstall.cmd。保留用户图片与备份，不删除官方客户端和用户资料。
-
-
-2026-11-02 背景故障续修请先读 docs/BACKGROUND-2026-11-02.md。旧版成功记录和隔离测试不构成当前真实背景验收；全入口背景加载尚未实现。
+交付时分别报告源码推送、安装包附件、实际安装、挂件、额度、背景及各入口实测；不把其中一项通过说成全部完成。

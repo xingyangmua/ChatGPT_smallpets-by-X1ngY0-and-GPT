@@ -6,7 +6,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--electron-archive', required=True, type=Path)
     parser.add_argument('--output', default='dist', type=Path)
-    parser.add_argument('--version', default='1.1.0-beta.5')
+    parser.add_argument('--version', default='1.1.0-beta.6')
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[1]
     source = repo / 'app'
@@ -23,6 +23,7 @@ def main():
     excluded = {'data', 'backups', 'evidence', 'node_modules', '.git', '__pycache__', 'qa', 'dist'}
     files = sorted(p for p in source.rglob('*') if p.is_file()
                    and not excluded.intersection(p.relative_to(source).parts)
+                   and p.relative_to(source).as_posix() != 'official-startup/reviewed-candidate.json'
                    and p.suffix.lower() not in {'.log', '.lnk', '.exe', '.zip'})
     for file in files:
         if file.is_symlink() or file.name in {'auth.json', 'runtime.json', '.env'}:

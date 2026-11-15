@@ -35,14 +35,15 @@ export function lowAlerts(snapshot, seen, enabled = true, now = Date.now()) {
 function read(file, fallback = {}) { try { return JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')); } catch { return fallback; } }
 function write(file, value) { const tmp = file + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(value, null, 2), {mode: 0o600}); fs.renameSync(tmp, file); }
 export class QuotaMonitor extends EventEmitter {
-  constructor({dataDir, codexHome, cli, fixture = false, enabled = true, resolveCli = resolveCodexCli}) {
+  constructor({dataDir, codexHome, cli, fixture = false, enabled = true, resolveCli = resolveCodexCli, blockedReason = ''}) {
     super(); this.dir = dataDir; this.home = codexHome; this.cli = cli; this.fixture = fixture;
+    this.blockedReason = blockedReason;
     this.resolveCli=resolveCli;this.enabled=enabled!==false;this.generation=0;this.seq = 0; this.pending = new Map(); this.failures = 0; this.closed = false; this.settings = read(path.join(dataDir, 'mutsumi-settings.json'), {alerts: true});
-    this.seen = read(path.join(dataDir, 'mutsumi-alerts.json')); this.value = {status:'unavailable',at:null,scope:null,windows:[],resetCount:null,reason:'正在连接官方额度服务'};
-    if (!fixture) { this.authStamp = this.stamp(); if(this.enabled)this.start(); this.watch = setInterval(() => { if(!this.enabled)return;const s = this.stamp(); if (s !== this.authStamp) { this.authStamp = s; this.invalidate('账号状态已变化，正在重新核对'); this.restart(); } }, 3000); this.watch.unref(); }
+    this.seen = read(path.join(dataDir, 'mutsumi-alerts.json')); this.value = {status:'unavailable',at:null,scope:null,windows:[],resetCount:null,reason:blockedReason||'正在连接官方额度服务'};
+    if (!fixture && !blockedReason) { this.authStamp = this.stamp(); if(this.enabled)this.start(); this.watch = setInterval(() => { if(!this.enabled)return;const s = this.stamp(); if (s !== this.authStamp) { this.authStamp = s; this.invalidate('账号状态已变化，正在重新核对'); this.restart(); } }, 3000); this.watch.unref(); }
   }
   setEnabled(value){if(typeof value!=='boolean'||this.closed||value===this.enabled)return;this.enabled=value;this.generation++;
-    for(const t of [this.timer,this.reconnect,this.eventTimer])clearTimeout(t);const old=this.child;this.child=null;this.ready=false;this.busy=false;old?.kill();for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(Error('companion disabled'));}this.pending.clear();this.invalidate(value?'正在连接官方额度服务':'额度挂件已关闭');if(value&&!this.fixture){this.authStamp=this.stamp();this.start();}}
+    for(const t of [this.timer,this.reconnect,this.eventTimer])clearTimeout(t);const old=this.child;this.child=null;this.ready=false;this.busy=false;old?.kill();for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(Error('companion disabled'));}this.pending.clear();this.invalidate(value?(this.blockedReason||'正在连接官方额度服务'):'额度挂件已关闭');if(value&&!this.fixture&&!this.blockedReason){this.authStamp=this.stamp();this.start();}}
   stamp() { try { const s=fs.statSync(path.join(this.home,'auth.json'));return `${s.mtimeMs}:${s.size}`; } catch { return 'none'; } }
   invalidate(reason) { this.scope = null; this.value = {status:'unavailable',at:null,scope:null,windows:[],resetCount:null,reason}; this.emit('updated', this.snapshot()); }
   snapshot() {
@@ -107,6 +108,7 @@ export class QuotaMonitor extends EventEmitter {
   }
   async start() {
     if(this.closed||!this.enabled)return;
+    if(this.blockedReason){this.invalidate(this.blockedReason);return;}
     this.ready=false;
     const generation=this.generation;
     let cli;

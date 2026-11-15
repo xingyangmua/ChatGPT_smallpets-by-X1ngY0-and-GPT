@@ -1,0 +1,19 @@
+html[data-dsh-work-pet-background] body { background:transparent !important; }
+html[data-dsh-work-pet-background] #root { position:relative; z-index:1; }
+html[data-dsh-work-pet-background] body { --dsw-alias-bg-base:rgba(255,255,255,.78) !important; --dsw-specific-sidebar-fill:rgba(249,250,251,.84) !important; }
+html[data-dsh-work-pet-background] body[data-ds-dark-theme] { --dsw-alias-bg-base:rgba(21,21,23,.72) !important; --dsw-specific-sidebar-fill:rgba(27,27,28,.8) !important; }
+#dsh-work-pet-background { position:fixed;inset:0;z-index:0;pointer-events:none;background:center/cover no-repeat; }
+#dsh-work-pet-background[hidden],#dsh-work-pet-root [hidden] { display:none !important; }
+#dsh-work-pet-root { position:relative;z-index:10000;font:14px/1.5 system-ui,"Microsoft YaHei",sans-serif;color:#26323f; }
+#dsh-work-pet-root button,#dsh-work-pet-root input { font:inherit; }
+#dsh-work-pet-root button { cursor:pointer; }
+#dsh-work-pet-root .dwp-settings-button { position:fixed;left:18px;bottom:18px;border:1px solid #abbcc9;border-radius:16px;padding:5px 12px;background:#f6faff;color:#26323f;box-shadow:0 3px 12px #0002; }
+#dsh-work-pet-root .dwp-pet { position:fixed;width:100px;height:130px;padding:0;border:0;background:transparent;touch-action:none;cursor:grab; }
+#dsh-work-pet-root .dwp-pet:active { cursor:grabbing; }
+#dsh-work-pet-root .dwp-pet img { width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 5px 6px #0003); }
+#dsh-work-pet-root .dwp-panel { position:fixed;left:18px;bottom:58px;width:min(340px,calc(100vw - 36px));box-sizing:border-box;max-height:calc(100vh - 80px);overflow:auto;padding:16px;border:1px solid #aabac9;border-radius:16px;background:#f7fbff;box-shadow:0 12px 40px #0004; }
+#dsh-work-pet-root .dwp-header,#dsh-work-pet-root .dwp-row { display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:12px; }
+#dsh-work-pet-root .dwp-row input[type=file] { max-width:210px;font-size:12px; }
+#dsh-work-pet-root .dwp-row input[type=range] { width:190px; }
+#dsh-work-pet-root .dwp-notice,#dsh-work-pet-root .dwp-note { font-size:12px;color:#536777; }
+#dsh-work-pet-root .dwp-panel button { padding:5px 10px;border:1px solid #abbcc9;border-radius:7px;background:white;color:#26323f; }
