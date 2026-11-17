@@ -1805,6 +1805,15 @@ html[data-dream-skin="active"][data-codex-os="win32"][data-codex-window-chrome="
   margin-top: 0 !important;
 }
 
+/* Newer Windows shells nest the docked sidebar inside flex wrappers. The
+   direct-child rule above cannot clear its native 8px top gap there. Follow
+   the workspace ancestry, while leaving floating/peeking sidebars alone. */
+html[data-dream-skin="active"][data-codex-os="win32"][data-codex-window-chrome="application-menu"]
+  [data-app-shell-frame][data-app-shell-sidebar-open="true"][data-app-shell-responsive-sidebar="false"][data-app-shell-docking-peek="false"]
+  [data-app-shell-workspace-row] aside.app-shell-left-panel:not([data-slate-sidebar-peeking="true"]) {
+  margin-top: 0 !important;
+}
+
 /* Do not blur the wallpaper a second time through the Windows menu bar. */
 html[data-dream-skin="active"][data-codex-os="win32"][data-codex-window-chrome="application-menu"]
   :is([class~="group/application-menu-top-bar"], [class*="_ApplicationMenuTopBar_"]) {

@@ -1,4 +1,4 @@
-# 重建与发布 1.1.0-beta.6
+# 重建与发布 0.1.10
 
 使用 Python 3.11 或更高版本。Windows 完整包使用固定的 Electron 44.3.0 Windows x64 官方 ZIP，并保留许可证，SHA-256 为：
 
@@ -10,7 +10,7 @@
 
 ```text
 node --test app/widget/tests/*.test.mjs
-python tools/build_release.py --electron-archive electron-runtime.zip --output dist --version 1.1.0-beta.6
+python tools/build_release.py --electron-archive electron-runtime.zip --output dist --version 0.1.10
 ```
 
 版本必须同步到 widget 元数据、锁文件、运行时常量、安装收据及根/包内文档。根 `release.json` 在最终构建时生成；不要预填或沿用旧 ZIP 的 SHA-256。
@@ -27,7 +27,7 @@ Windows ZIP 与源码提交都排除用户 data、备份、日志、截图、私
 
 不要直接把整个工作目录作为发布输入。打包按固定顺序和时间戳写入文件并规范文本换行。先明确提交文件，再从该 Git 树重建并核对可复现 SHA-256，检查 ZIP 目录和许可证。DSH 适配器位于 `adapters/dsh`，采用独立版本和 npm 包清单；Windows 的 `app` 打包路径不会自动包含它，须另行打包及验证。
 
-维护者可以通过两种明确入口发布 prerelease：推送对应的 `v*` 版本标签；或将已审查的发行提交推送到 `main`，并在该次提交消息中明确加入 `[release]`。普通 `main` 提交只验证，`workflow_dispatch` 手动运行也只构建验证，不发布。
+维护者可以通过两种明确入口发布版本：推送对应的 `v*` 版本标签；或将已审查的发行提交推送到 `main`，并在该次提交消息中明确加入 `[release]`。普通 `main` 提交只验证，`workflow_dispatch` 手动运行也只构建验证，不发布。版本号含预发布后缀时发布为 prerelease；如 `0.1.10` 的正式版本发布为最新 Release。
 
 `main` 的显式发布路径根据已核验的 `release.json` 使用版本标签，以本次 `GITHUB_SHA` 为目标。创建前必须确认同名标签不存在，或解析后精确指向本次提交；同名 Release 已存在时停止，不覆盖附件或移动标签。此入口同样须先通过测试、完整构建及 manifest SHA-256 核对，不能凭提交标记跳过验证。
 

@@ -42,7 +42,7 @@
     card.hidden=!quotaOpen;if(!quotaOpen)return;
     const live=current();card.replaceChildren();card.dataset.kind=bubbleKind;
     if(bubbleKind==='egg'){el('div',eggText,card,'mutsumi-easter');position();return;}
-    for(const minutes of [300,10080]) {
+    for(const minutes of MutsumiQuotaView.minutes(data)) {
       const w=data.windows?.find(x=>x.minutes===minutes)||{label:minutes===300?'五小时':'每周'};
       const valid=live && w.status==='fresh' && w.resetsAt*1000>Date.now();
       const line=el('div','',card,'mutsumi-line');el('span',w.label,line);const amount=el('b',valid?pct(w.remaining):'暂不可用',line);

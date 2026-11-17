@@ -1,6 +1,6 @@
 # 安装、维护与验收
 
-本流程适用于 `codex_work_pet 1.1.0-beta.6` 的 Windows 伴随组件。DSH 使用独立的 `dsh-work-pet` 包，按[适配器说明](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/tree/main/adapters/dsh)操作；两种安装方式不能互换。
+本流程适用于 `codex_work_pet 0.1.10` 的 Windows 伴随组件。DSH 使用独立的 `dsh-work-pet` 包，按[适配器说明](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/tree/main/adapters/dsh)操作；两种安装方式不能互换。
 
 ## 安装前
 

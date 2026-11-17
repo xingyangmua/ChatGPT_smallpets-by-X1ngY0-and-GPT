@@ -67,5 +67,6 @@ jobs:
             git push origin $tagRef
             if($LASTEXITCODE -ne 0){throw 'Cannot create the new release tag; no force update attempted'}
           }
-          gh release create $m.tag ('dist/'+$m.assetName) dist/SHA256SUMS.txt dist/release.json ('dist/dsh-work-pet-'+$dsh.version+'.tgz') dist/DSH-SHA256SUMS.txt --title ('codex_work_pet '+$m.version) --notes-file docs/RELEASE-NOTES.md --prerelease --verify-tag
+          $releaseKind=if($m.version.Contains('-')){'--prerelease'}else{'--latest'}
+          gh release create $m.tag ('dist/'+$m.assetName) dist/SHA256SUMS.txt dist/release.json ('dist/dsh-work-pet-'+$dsh.version+'.tgz') dist/DSH-SHA256SUMS.txt --title ('codex_work_pet '+$m.version) --notes-file docs/RELEASE-NOTES.md $releaseKind --verify-tag
           if($LASTEXITCODE -ne 0){throw 'Release publication failed'}

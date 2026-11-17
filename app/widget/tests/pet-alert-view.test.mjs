@@ -5,3 +5,22 @@ function setup(){const values=new Map(),storage={getItem:k=>values.get(k)??null,
 test('low quota is restored on first valid snapshot without a new one-shot notification',()=>{const {view}=setup();assert.equal(view.visible(snapshot(10)).length,0);const low=snapshot();assert.equal(view.visible(low).length,1);for(let i=0;i<20;i++)assert.equal(view.visible(low).length,1);assert.equal(MutsumiLowView.create(setup().storage,()=>at).visible(low).length,1);});
 test('merged warning remains dismissed across restart but returns for a new cycle or account',()=>{const {view,storage}=setup(),low=snapshot(9.9,8);assert.equal(view.visible(low).length,2);view.dismiss(low,view.visible(low));assert.equal(view.visible(low).length,0);const next=MutsumiLowView.create(storage,()=>at);assert.equal(next.visible(low).length,0);low.windows[0].resetsAt+=3600;assert.equal(next.visible(low).length,2);assert.equal(next.visible({...low,scope:'account-b'}).length,2);});
 test('unknown, expired, offline and disabled snapshots never create a warning',()=>{const {view}=setup();for(const value of [{...snapshot(),status:'stale'},{...snapshot(),at:at-300001},{...snapshot(),at:null},{...snapshot(),alertsEnabled:false},{...snapshot(),scope:null},snapshot(null),snapshot(-1),snapshot(NaN)])assert.equal(view.visible(value).length,0);const expired=snapshot();expired.windows[0].resetsAt=at/1000;assert.equal(view.visible(expired).length,0);});
+
+test('official Pro and Pro Lite plans display weekly quota while other or unknown plans retain both windows',()=>{
+ for(const plan of ['pro','prolite'])assert.deepEqual(MutsumiQuotaView.minutes({...snapshot(),plan}),[10080]);
+ for(const plan of ['plus','free','team','business','enterprise','pro-unverified',null,undefined])assert.deepEqual(MutsumiQuotaView.minutes({...snapshot(),plan}),[300,10080]);
+ const onlyWeekly={...snapshot(),windows:[window(10080,40)]};
+ assert.deepEqual(MutsumiQuotaView.minutes(onlyWeekly),[300,10080]);
+ assert.deepEqual(MutsumiQuotaView.minutes({...onlyWeekly,plan:'pro',windows:[]}),[10080]);
+});
+
+test('Pro warnings exclude five-hour quota, preserve weekly warnings and recover both windows after switching to Plus',()=>{
+ const {view}=setup(),bothLow=snapshot(1,2),pro={...bothLow,plan:'pro'};
+ assert.deepEqual(view.visible(pro).map(w=>w.minutes),[10080]);
+ assert.deepEqual(view.visible({...pro,plan:'prolite'}).map(w=>w.minutes),[10080]);
+ assert.deepEqual(view.visible({...pro,windows:[window(300,1),window(10080,40)]}),[]);
+ assert.deepEqual(view.visible({...pro,status:'stale'}),[]);
+ view.dismiss(pro,view.visible(pro));
+ assert.deepEqual(view.visible(pro),[]);
+ assert.deepEqual(view.visible({...bothLow,plan:'plus'}).map(w=>w.minutes),[300,10080]);
+});

@@ -1,11 +1,13 @@
 # gpt自定义插件 · codex_work_pet
 
-版本 **1.1.0-beta.6**。为 Windows x64 上的 Codex / ChatGPT Work 提供可自定义背景、角色挂件和官方订阅额度显示；另有独立的 DSH 背景与角色适配包。
+版本 **0.1.10**。为 Windows x64 上的 Codex / ChatGPT Work 提供可自定义背景、角色挂件和官方订阅额度显示；另有独立的 DSH 背景与角色适配包。
 
-[下载完整 Windows 安装包](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/releases/tag/v1.1.0-beta.6) · [安装与维护](docs/AI-INSTALL.md) · [验证范围](docs/VERIFICATION.md) · [DSH 适配说明](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/tree/main/adapters/dsh)
+[下载完整 Windows 安装包](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/releases/tag/v0.1.10) · [安装与维护](docs/AI-INSTALL.md) · [验证范围](docs/VERIFICATION.md) · [DSH 适配说明](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/tree/main/adapters/dsh)
 
 ## 本版修复
 
+- 根据官方会员类型识别 Pro 后，额度窗口只显示每周额度，隐藏五小时额度及其低额度提醒；其他会员类型沿用原显示。
+- 修复 Windows 顶部背景交界的阶梯状缺口：兼容新版嵌套侧栏容器，清除停靠侧栏多余的 8px 顶部间距，并保留浮动与窥视侧栏布局。
 - 安装记录损坏时保留原件，优先从有效备份恢复，并通过互斥及原子替换减少再次损坏。额度模块异常不再导致整个挂件退出。
 - 背景启动优先使用已有的商店版登录档，避免误选另一个普通启动目录；不会新建替代登录档或读取认证文件。
 - 增加默认关闭的官方开始菜单启动桥。在 Windows 11 x64 build 26200 上，精确 MSIX 包入口已完成两次独立无参数冷启动：主题参数、挂件与背景连接均通过。启用前须在本机编译、完成隔离测试并单独确认。
