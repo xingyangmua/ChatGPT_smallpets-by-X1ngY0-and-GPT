@@ -13,7 +13,7 @@ env:
 jobs:
   verify:
     if: github.ref_type == 'tag' || contains(github.event.head_commit.message, '[macos-release]')
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     steps:
       - uses: actions/checkout@v4
         with:
