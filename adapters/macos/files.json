@@ -1,0 +1,21 @@
+[
+  ".agents/plugins/marketplace.json",
+  "LICENSE",
+  "THIRD_PARTY_NOTICES.md",
+  "adapters/macos/README.md",
+  "adapters/macos/files.json",
+  "adapters/macos/manage.sh",
+  "adapters/macos/pet.js",
+  "adapters/macos/quota.mjs",
+  "adapters/macos/setup.mjs",
+  "adapters/macos/supervise.mjs",
+  "app/widget/LICENSE",
+  "app/widget/PROVENANCE.md",
+  "app/widget/THIRD_PARTY_NOTICES.md",
+  "app/widget/assets/IMG3576.png",
+  "app/widget/docs/MATERIALS-PERMISSION.md",
+  "app/widget/runtime/codex-install.mjs",
+  "app/widget/runtime/pet-quota.mjs",
+  "plugins/work-pet-macos/.codex-plugin/plugin.json",
+  "plugins/work-pet-macos/skills/work-pet/SKILL.md"
+]

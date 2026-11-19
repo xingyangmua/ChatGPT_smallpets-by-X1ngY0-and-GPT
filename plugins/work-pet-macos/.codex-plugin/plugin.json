@@ -1,0 +1,22 @@
+{
+  "name": "work-pet-macos",
+  "version": "1.0.0",
+  "description": "在 ChatGPT 桌面应用内控制 X1ngY0 的 macOS 角色挂件。",
+  "author": {
+    "name": "X1ngY0"
+  },
+  "repository": "https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Work Pet for Mac",
+    "shortDescription": "显示或隐藏 Mac 角色挂件，检查运行状态。",
+    "developerName": "X1ngY0",
+    "category": "Productivity",
+    "defaultPrompt": [
+      "查看 Work Pet 挂件状态",
+      "显示我的 Work Pet 挂件",
+      "隐藏我的 Work Pet 挂件"
+    ]
+  }
+}

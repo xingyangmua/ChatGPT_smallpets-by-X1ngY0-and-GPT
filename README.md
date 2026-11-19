@@ -1,10 +1,12 @@
 # gpt自定义插件 · codex_work_pet
 
-版本 **0.1.10**。为 Windows x64 上的 Codex / ChatGPT Work 提供可自定义背景、角色挂件和官方订阅额度显示；另有独立的 DSH 背景与角色适配包。
+**macOS 1.0.0** 提供角色挂件和官方订阅额度。解压 Mac 安装包，运行 `Install-macOS.command`，照常打开官方 ChatGPT，角色会出现在聊天窗口右下方。点击角色查看额度或彩蛋，拖动调整位置，右键更换图片。也可以在官方插件入口调用 Work Pet 控制显示。[下载 Mac 安装包](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/releases/tag/v1.0.0release) · [Mac 使用说明](adapters/macos/README.md)
+
+**Windows 0.1.10** 为 Windows x64 上的 Codex / ChatGPT Work 提供可自定义背景、角色挂件和官方订阅额度显示；另有独立的 DSH 背景与角色适配包。
 
 [下载完整 Windows 安装包](https://github.com/xingyangmua/ChatGPT_smallpets-by-X1ngY0-and-GPT/releases/tag/v0.1.10) · [安装与维护](docs/AI-INSTALL.md) · [验证范围](docs/VERIFICATION.md) · [DSH 适配说明](adapters/dsh/README.md)
 
-## 本版修复
+## Windows 0.1.10 修复
 
 - 根据官方会员类型识别 Pro 后，额度窗口只显示每周额度，隐藏五小时额度及其低额度提醒；其他会员类型沿用原显示。
 - 修复 Windows 顶部背景交界的阶梯状缺口：兼容新版嵌套侧栏容器，清除停靠侧栏多余的 8px 顶部间距，并保留浮动与窥视侧栏布局。

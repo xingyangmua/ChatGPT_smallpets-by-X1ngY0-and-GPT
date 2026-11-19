@@ -1,0 +1,20 @@
+{
+  "name": "x1ngy0-work-pet",
+  "interface": {
+    "displayName": "X1ngY0 Work Pet"
+  },
+  "plugins": [
+    {
+      "name": "work-pet-macos",
+      "source": {
+        "source": "local",
+        "path": "./plugins/work-pet-macos"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

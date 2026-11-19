@@ -2,7 +2,7 @@ name: Windows release
 on:
   push:
     branches: ['main']
-    tags: ['v*']
+    tags: ['v*', '!v1.0.0release']
   workflow_dispatch:
 permissions:
   contents: write

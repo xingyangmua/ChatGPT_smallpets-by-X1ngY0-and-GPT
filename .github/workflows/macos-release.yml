@@ -1,0 +1,97 @@
+name: macOS release
+on:
+  push:
+    branches: [main]
+    tags: [v1.0.0release]
+
+permissions:
+  contents: read
+
+env:
+  RELEASE_TAG: v1.0.0release
+
+jobs:
+  verify:
+    if: github.ref_type == 'tag' || contains(github.event.head_commit.message, '[macos-release]')
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test the macOS port and shared widget
+        env:
+          TMPDIR: /tmp
+        run: |
+          bash -n Install-macOS.command
+          bash -n adapters/macos/manage.sh
+          osacompile -l JavaScript -o "$RUNNER_TEMP/work-pet.scpt" adapters/macos/pet.js
+          node --test --test-concurrency=2 adapters/macos/tests/*.test.mjs app/widget/tests/*.test.mjs
+      - name: Rebuild the locally verified package
+        shell: python
+        run: |
+          import hashlib
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          manifest = json.loads(Path("adapters/macos/release.json").read_text())
+          plugin = json.loads(Path("plugins/work-pet-macos/.codex-plugin/plugin.json").read_text())
+          name = manifest["assetName"]
+          if manifest["tag"] != os.environ["RELEASE_TAG"] or manifest["version"] != plugin["version"]:
+              sys.exit("macOS release metadata does not match the plugin or tag")
+          if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*\.zip", name):
+              sys.exit("Invalid macOS ZIP file name")
+          archive = Path("dist") / name
+          subprocess.run([sys.executable, "tools/build_macos.py", str(archive)], check=True)
+          digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+          if digest != manifest["sha256"]:
+              sys.exit("Rebuilt ZIP differs from the locally verified macOS package")
+          (archive.parent / "SHA256SUMS.txt").write_text(f"{digest}  {name}\n", encoding="ascii")
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-release
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    concurrency: macos-work-pet-release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-release
+          path: dist
+      - name: Publish verified macOS assets
+        working-directory: dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          sha256sum --check --strict SHA256SUMS.txt
+          ref="refs/tags/$RELEASE_TAG"
+          repo_api="repos/$GITHUB_REPOSITORY"
+          matches=$(gh api "$repo_api/git/matching-refs/tags/$RELEASE_TAG")
+          if ! jq -e --arg ref "$ref" 'any(.[]; .ref == $ref)' <<<"$matches" >/dev/null; then
+            gh api --method POST "$repo_api/git/refs" -f ref="$ref" -f sha="$GITHUB_SHA" >/dev/null
+          fi
+          target=$(gh api "$repo_api/commits/tags/$RELEASE_TAG" --jq '.sha')
+          if [[ "$target" != "$GITHUB_SHA" ]]; then
+            echo "The release tag points to a different commit." >&2
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "$RELEASE_TAG" --latest \
+            --notes 'macOS 角色挂件和官方额度显示。下载 ZIP，解压并运行 Install-macOS.command，然后从原有的 ChatGPT 图标打开应用。右键角色可更换图片。' \
+            ./*.zip SHA256SUMS.txt
